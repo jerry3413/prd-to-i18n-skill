@@ -11,6 +11,7 @@ Use the coordinator protocol as the front door to the skill. The coordinator sho
 - route work to translator and reviewer only after the manifest slice is ready
 
 In user-facing conversation, keep the language plain. Infer internal modes and policies yourself instead of asking the user to choose between `basic`, `review`, `strict`, `inherit`, `template`, or `canonical` unless they explicitly ask.
+Treat `draft-only` and `release-ready` as internal terms. When talking to users, ask instead whether they want a simple draft copy list or a final package the team can use directly.
 
 ## Why This Role Stays In The Foreground
 
@@ -44,6 +45,7 @@ Anthropic's latest guidance favors keeping clarification-heavy work in the main 
 4. Ask questions only for blocking items.
    Ask at most 3 questions in one round.
    Prioritize the highest-leverage missing item first.
+   Before expensive extraction from a raw PDF, Word file, or mixed PRD bundle, allow only lightweight preflight checks such as file type, page count, and whether text appears selectable.
 5. State the fallback mode.
    If a non-blocking item is missing, continue and say what mode the skill will use instead.
 6. Freeze the manifest slice before delegation.
@@ -57,8 +59,8 @@ Prefer the simplest interpretation first:
 - if the user gives a key and one string, start from `translation-fix`
 - if the user gives a manifest or only asks for output files, start from `export-only`
 - if the user gives a folder of exported resources, accept the folder directly instead of asking them to enumerate file descriptors
-- if the user gives a PRD, PDF, Word spec, or release document, do not jump straight into translation; first confirm whether they want a draft table or release-ready delivery
-- after the user confirms `release-ready`, ask for the current localization baseline and the target outputs
+- if the user gives a PRD, PDF, Word spec, or release document, do not jump straight into translation or full-text extraction; first confirm in plain language whether they want a draft copy table or a final developer-ready package
+- after the user confirms the final delivery path, ask for the current localization baseline and the target outputs
 
 When asking for data, prefer:
 
@@ -74,7 +76,7 @@ When Claude Code project subagents are available, the main thread should still o
 ## What Counts As Blocking
 
 - no source text or PRD for a `new-build`
-- no confirmed goal yet when the request starts from raw PRD/PDF/Word materials and it is still unclear whether the user wants draft-only output or release-ready delivery
+- no confirmed goal yet when the request starts from raw PRD/PDF/Word materials and it is still unclear whether the user wants a draft copy table or a final delivery package
 - no current snapshot when the user asks for dedupe, reuse, or change sync
 - no current snapshot when the request is clearly release prep or handoff work and the user has not opted into draft-only mode
 - no business context for ambiguous or high-risk copy
@@ -103,7 +105,7 @@ Prefer file or field requests over open-ended prompts. Instead of asking for “
 
 Good:
 
-- “Before I continue, should I treat this as draft-only extraction/translation, or as release-ready localization delivery? If it is release-ready, please also send the current localization export and tell me the final output format.”
+- “Before I spend time pulling text out of this document, do you want me to first整理一版待翻译文案, or do you want a final multi-language package your team can use directly? If you want the final package, please also send the current localization export and tell me the final output format.”
 - “Please provide a folder that contains iOS `.strings`, Android `strings.xml`, JSON locale files, or CSV exports so I can run dedupe and reuse checks.”
 - “Please tell me what final handoff you need: iOS `.strings`, Android `strings.xml`, Web/App JSON, CSV, manifest only, or a custom import schema. Without that, I can only stop at a draft manifest or CSV.”
 - “For `app_identify_psy_photos`, please provide `screen`, `component`, and `background`. Without that, I will mark it `review-required`.”
@@ -132,17 +134,17 @@ PRD is present. Screenshots are missing but optional for this batch.
 - raw PRD input
 </known_inputs>
 <missing_required>
-- Confirm whether the user wants draft-only output or release-ready delivery
+- Confirm whether the user wants a draft copy list or a final delivery package
 </missing_required>
 <questions>
   <question id="goal">
-    <why>I need to know whether this is a draft-only request or a release-ready delivery request before I decide which follow-up inputs are truly required.</why>
-    <accepted_formats>Reply with either `draft-only`, or `release-ready` plus the current export folder and the target outputs you need</accepted_formats>
-    <fallback>If you do not decide yet, I will stop at draft extraction or a draft manifest instead of pretending I can finish final delivery.</fallback>
+    <why>I need to know whether you want a simple draft list of translatable copy, or a final package your team can import or hand to developers.</why>
+    <accepted_formats>Reply with either “draft copy list” or “final delivery package”. If you want the final package, also include the current export folder and the target outputs you need.</accepted_formats>
+    <fallback>If you do not decide yet, I will stop before heavy extraction and will not pretend I can finish final delivery.</fallback>
   </question>
 </questions>
 <next_step>
-After you confirm the goal, I will either continue with draft extraction or ask for the baseline and output target needed for release-ready delivery.
+After you confirm the goal, I will either continue with draft extraction or ask for the baseline and output target needed for final delivery.
 </next_step>
 ```
 
@@ -172,24 +174,24 @@ Coordinator response:
 ```xml
 <task_mode>new-build</task_mode>
 <ready_now>
-I can start extracting candidate strings from the PRD now.
+I can start from this PRD, but I should confirm the target outcome before doing the heavier extraction work.
 </ready_now>
 <known_inputs>
 - PRD markdown
 - raw PRD input
 </known_inputs>
 <missing_required>
-- Confirm whether the user wants draft-only output or release-ready delivery
+- Confirm whether the user wants a draft copy list or a final delivery package
 </missing_required>
 <questions>
   <question id="goal">
-    <why>I need to know whether you want a draft translation table or a release-ready localization package. The release-ready path also requires the current catalog and final handoff format.</why>
-    <accepted_formats>Reply with either `draft-only`, or `release-ready` plus an export folder / iOS .strings / Android strings.xml / CSV / JSON and the target outputs you need</accepted_formats>
-    <fallback>If you do not decide yet, I will stop at draft extraction or a draft manifest instead of pretending I can finish the final delivery flow.</fallback>
+    <why>I need to know whether you want me to first整理一版待翻译文案, or whether you want a final package your team can use directly. The final package path also needs the current catalog and the handoff format.</why>
+    <accepted_formats>Reply with either “draft copy list” or “final delivery package”. If you want the final package, also send an export folder / iOS .strings / Android strings.xml / CSV / JSON and the target outputs you need.</accepted_formats>
+    <fallback>If you do not decide yet, I will stop before the heavier extraction steps instead of pretending I can finish the final delivery flow.</fallback>
   </question>
 </questions>
 <next_step>
-After you confirm the goal, I will either continue with draft extraction or ask for the baseline and output target needed for release-ready delivery.
+After you confirm the goal, I will either continue with draft extraction or ask for the baseline and output target needed for final delivery.
 </next_step>
 ```
 
@@ -270,28 +272,23 @@ Coordinator response:
 ```xml
 <task_mode>new-build</task_mode>
 <ready_now>
-I can start from the screenshot and PDF, but the trust level depends on whether the PDF has selectable text and whether the screenshots are legible.
+I can help from the screenshot and PDF, but I should confirm the target outcome before I spend time extracting text from them.
 </ready_now>
 <known_inputs>
 - screenshot evidence
 - PDF evidence
 </known_inputs>
 <missing_required>
-- reliable text for any ambiguous or high-risk copy
+- Confirm whether the user wants a draft copy list or a final delivery package
 </missing_required>
 <questions>
-  <question id="pdf-quality">
-    <why>I need to know whether I can extract exact text from the PDF or whether I should treat it as vision-only evidence.</why>
-    <accepted_formats>Provide the original PDF, confirm whether the text is selectable, or paste the relevant text manually.</accepted_formats>
-    <fallback>If the PDF is image-only, I can still build draft entries from visible text, but ambiguous items will stay review-required.</fallback>
-  </question>
-  <question id="context">
-    <why>For screenshot-derived text, I need enough scene context to avoid mistranslating short labels.</why>
-    <accepted_formats>Provide `screen`, `component`, and one sentence of background for each unclear string, or attach annotated crops.</accepted_formats>
-    <fallback>Without that, I will keep those entries in basic mode and will not auto-finalize them.</fallback>
+  <question id="goal">
+    <why>I need to know whether you want me to first整理出待翻译文案, or whether you want a final package your team can use directly.</why>
+    <accepted_formats>Reply with either “draft copy list” or “final delivery package”. If you want the final package, also send the current localization export and the target output format.</accepted_formats>
+    <fallback>If you do not decide yet, I will stop before the heavier extraction steps.</fallback>
   </question>
 </questions>
 <next_step>
-Once I know the extraction quality and have minimal context for unclear labels, I will build the first manifest draft.
+After you confirm the goal, I will do a light extraction-quality check and then either build a draft copy list or continue toward final delivery.
 </next_step>
 ```

@@ -48,6 +48,8 @@ Common signals:
 
 If `delivery-intent` is inferred from raw materials instead of stated explicitly, confirm the goal with the user before moving from extraction into translation or export.
 
+Treat `draft-only` and `release-ready` as internal labels. In user-facing conversation, ask in plain language whether the user wants a simple draft list of translatable copy or a final package for import or developer handoff.
+
 When `delivery-intent` is true:
 
 1. ask for the current localization baseline so the workflow can do dedupe, reuse, and change-safe key decisions
@@ -72,6 +74,7 @@ Infer key strategy in this order:
 
 | Situation | Action |
 | --- | --- |
+| raw-material request before the goal is confirmed | allow only lightweight preflight checks such as file type, page count, or whether text appears selectable; do not run full extraction, OCR, candidate building, or manifest generation yet |
 | `new-build` without snapshot and request is draft-only | continue, but skip high-confidence dedupe and reuse |
 | raw-material request where draft-only vs release-ready is still unclear | block and confirm the goal first |
 | `new-build` without snapshot and request looks like release prep | block and ask for the current catalog or key baseline first |

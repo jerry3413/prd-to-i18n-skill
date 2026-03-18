@@ -57,9 +57,11 @@ If the user starts from raw PRD materials instead of exported catalogs, prefer:
 
 For work that starts from raw materials, ask one thing early:
 
-1. whether the user wants `draft-only` output or `release-ready` delivery
+1. whether the user wants a simple draft copy list or a final delivery package
 
-If the user confirms `release-ready`, then ask:
+Treat `draft-only` and `release-ready` as internal labels only. In user-facing conversation, ask in plain language instead of exposing those labels directly.
+
+If the user confirms the final delivery path, then ask:
 
 1. the current localization baseline so the skill can dedupe and reuse safely
 2. the target outputs or handoff standard so the skill knows what the final delivery package must look like
@@ -70,7 +72,7 @@ Do not treat PRD as globally mandatory. Match the requirement to the task:
 
 - `new-build`
   Require a PRD, a structured copy list, or another reliable source of new text.
-  If the request is release-ready rather than draft-only, also require the current localization snapshot plus target output formats or handoff standard.
+  If the request is a final delivery request rather than a simple draft, also require the current localization snapshot plus target output formats or handoff standard.
 - `change-sync`
   Require changed source text such as a PRD diff, copy list, or updated source file, plus the current localization snapshot.
 - `dedupe`
@@ -104,7 +106,7 @@ At minimum, ask the team to export or provide:
 
 With only these fields, the skill can do basic duplicate checks, key suggestions, and bundle generation.
 
-Without a snapshot, do not present dedupe or reuse as high-confidence. For release-ready requests, ask for the baseline first unless the user explicitly accepts draft-only output.
+Without a snapshot, do not present dedupe or reuse as high-confidence. For final delivery requests, ask for the baseline first unless the user explicitly accepts draft-style output.
 
 If the source comes from a screenshot or PDF instead of a snapshot, require at least:
 
@@ -202,6 +204,8 @@ Use this split:
   The user explicitly wants extraction, rough translation, or a draft table only.
 - `release-ready`
   The user is preparing localization for handoff, import, delivery, or release.
+
+These labels are for internal reasoning. When talking to users, ask in plain language whether they want a draft copy list first or a final package the team can use directly.
 
 For `release-ready`, collect:
 

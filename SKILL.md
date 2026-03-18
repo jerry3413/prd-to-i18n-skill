@@ -17,7 +17,7 @@ Optimize for the simplest possible user interaction:
 - do not ask the user to choose internal modes or naming policies unless policy is the task
 - accept one export folder before asking for explicit file descriptors
 - ask for one blocking item at a time
-- when the request starts from a raw PRD, PDF, Word doc, or spec bundle, pause to confirm whether the user wants draft-only output or release-ready delivery
+- when the request starts from a raw PRD, PDF, Word doc, or spec bundle, ask in plain language what outcome the user wants before any heavy extraction, OCR, or manifest work
 - explain practical consequences in plain language instead of leading with internal jargon
 
 User-facing defaults:
@@ -46,12 +46,16 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    - `translation-fix`
    - `export-only`
    Ask only for missing blocking inputs.
-   For raw PRD/PDF/Word requests, first confirm whether the user wants draft-only output or release-ready delivery. Only after the user confirms release-ready delivery should you require the current localization baseline and target outputs.
+   For raw PRD/PDF/Word requests, first ask in plain language whether the user wants:
+   - a simple draft list of translatable copy
+   - a final localization package that the team can import or hand to developers
+   Only after the user confirms the final delivery path should you require the current localization baseline and target outputs.
+   Before that question is answered, allow only lightweight preflight checks such as file type, page count, or whether the document appears to contain selectable text. Do not run full text extraction, OCR, copy-candidate extraction, or manifest building yet.
    In user-facing replies, describe the task in plain language instead of requiring the user to know the mode name.
 2. Collect the source artifacts.
    For `new-build` and `change-sync`, require a PRD, a copy list, or another reliable source of changed text.
    For `translation-fix`, `dedupe`, and `export-only`, do not require a PRD when the task can be completed safely without it.
-   If the user confirms the task is release-ready rather than draft-only, also collect:
+   If the user confirms the task is a final delivery request rather than a simple draft, also collect:
    - the current localization baseline for dedupe and reuse
    - the target outputs or handoff standard for final delivery
    Apply the source-priority rule from [references/decision-tables.md](references/decision-tables.md).
@@ -150,7 +154,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 - Treat `L2` as AI recommendation plus human confirmation.
 - Treat `L3` as new key plus deprecate or inactivate the old key.
 - Auto-escalate when placeholders are ambiguous, terminology conflicts, or length is strict.
-- If a raw-material request never confirmed whether it is draft-only or release-ready, stop and clarify the goal before claiming final translation or delivery output.
+- If a raw-material request never confirmed whether the user wants a simple draft or a final delivery package, stop and clarify the goal before heavy extraction or before claiming final translation or delivery output.
 
 ## Use Large-Batch Tactics
 
