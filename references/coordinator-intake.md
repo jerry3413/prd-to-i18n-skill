@@ -12,6 +12,7 @@ Use the coordinator protocol as the front door to the skill. The coordinator sho
 
 In user-facing conversation, keep the language plain. Infer internal modes and policies yourself instead of asking the user to choose between `basic`, `review`, `strict`, `inherit`, `template`, or `canonical` unless they explicitly ask.
 Treat `draft-only` and `release-ready` as internal terms. When talking to users, ask instead whether they want a simple draft copy list or a final package the team can use directly.
+If the user appears to want a full document translation, do not silently reinterpret that as localization delivery. Clarify the goal first.
 
 ## Why This Role Stays In The Foreground
 
@@ -26,6 +27,7 @@ Anthropic's latest guidance favors keeping clarification-heavy work in the main 
    - `dedupe`
    - `translation-fix`
    - `export-only`
+   - `out-of-scope document translation`, when the user appears to want the whole PRD, PDF, or spec translated as a document instead of extracting UI copy for localization
 2. Inventory the inputs already present.
    Track:
    - PRD
@@ -46,6 +48,7 @@ Anthropic's latest guidance favors keeping clarification-heavy work in the main 
    Ask at most 3 questions in one round.
    Prioritize the highest-leverage missing item first.
    Before expensive extraction from a raw PDF, Word file, or mixed PRD bundle, allow only lightweight preflight checks such as file type, page count, and whether text appears selectable.
+   For raw PRD/PDF/Word requests, the first substantive reply must ask what result the user wants before you describe extraction, translation, or output generation.
 5. State the fallback mode.
    If a non-blocking item is missing, continue and say what mode the skill will use instead.
 6. Freeze the manifest slice before delegation.
@@ -59,6 +62,7 @@ Prefer the simplest interpretation first:
 - if the user gives a key and one string, start from `translation-fix`
 - if the user gives a manifest or only asks for output files, start from `export-only`
 - if the user gives a folder of exported resources, accept the folder directly instead of asking them to enumerate file descriptors
+- if the user asks to translate the whole PRD, the whole PDF, or the whole spec, clarify whether they really want document translation or whether they want localization copy extraction
 - if the user gives a PRD, PDF, Word spec, or release document, do not jump straight into translation or full-text extraction; first confirm in plain language whether they want a draft copy table or a final developer-ready package
 - after the user confirms the final delivery path, ask for the current localization baseline and the target outputs
 
@@ -76,6 +80,7 @@ When Claude Code project subagents are available, the main thread should still o
 ## What Counts As Blocking
 
 - no source text or PRD for a `new-build`
+- no confirmed scope yet when the request may actually be full-document translation rather than localization delivery
 - no confirmed goal yet when the request starts from raw PRD/PDF/Word materials and it is still unclear whether the user wants a draft copy table or a final delivery package
 - no current snapshot when the user asks for dedupe, reuse, or change sync
 - no current snapshot when the request is clearly release prep or handoff work and the user has not opted into draft-only mode
@@ -105,6 +110,7 @@ Prefer file or field requests over open-ended prompts. Instead of asking for “
 
 Good:
 
+- “Do you want the whole document translated, or do you want me to pull out the user-facing copy and turn it into a localization package? Those are two different workflows.”
 - “Before I spend time pulling text out of this document, do you want me to first整理一版待翻译文案, or do you want a final multi-language package your team can use directly? If you want the final package, please also send the current localization export and tell me the final output format.”
 - “Please provide a folder that contains iOS `.strings`, Android `strings.xml`, JSON locale files, or CSV exports so I can run dedupe and reuse checks.”
 - “Please tell me what final handoff you need: iOS `.strings`, Android `strings.xml`, Web/App JSON, CSV, manifest only, or a custom import schema. Without that, I can only stop at a draft manifest or CSV.”
@@ -115,6 +121,7 @@ Good:
 Weak:
 
 - “Can you provide more information?”
+- “I’ll extract the PDF and start translating it now.”
 - “Tell me more about the context.”
 - “Please choose between basic, review, and strict mode.”
 
@@ -160,6 +167,39 @@ Follow Anthropic's latest prompting guidance:
 - if the source came from images or scanned PDFs, state the confidence limit explicitly
 
 ## Few-Shot Examples
+
+### Example 0
+
+User request:
+
+```text
+Please translate this PRD PDF into English.
+```
+
+Coordinator response:
+
+```xml
+<task_mode>out-of-scope document translation</task_mode>
+<ready_now>
+I can help, but I first need to confirm whether you want the whole document translated or whether you want the user-facing copy extracted for localization work.
+</ready_now>
+<known_inputs>
+- raw PDF input
+</known_inputs>
+<missing_required>
+- Confirm whether the task is full document translation or localization copy extraction
+</missing_required>
+<questions>
+  <question id="scope">
+    <why>Full document translation and localization delivery are different workflows. If I guess wrong, I will do the wrong kind of work.</why>
+    <accepted_formats>Reply with either “translate the whole document” or “extract the user-facing copy for localization”.</accepted_formats>
+    <fallback>If you do not decide yet, I will stop after basic file preflight and will not start extraction or output generation.</fallback>
+  </question>
+</questions>
+<next_step>
+After you confirm the scope, I will either leave this skill path or continue with the localization workflow.
+</next_step>
+```
 
 ### Example 1
 

@@ -61,6 +61,17 @@ Only skip these questions when one of the following is also true:
 - the baseline or output targets are already present in the provided files
 - team defaults are already known in the workspace and are safe to apply
 
+## Non-Goal Rule
+
+If the user asks for whole-document translation of a PRD, PDF, Confluence export, or spec, do not silently route that request into the localization-delivery pipeline.
+
+First confirm whether they want:
+
+1. whole-document translation
+2. extraction of user-facing copy for localization delivery
+
+Only continue with this skill if the user confirms the second path.
+
 ## Key Strategy Rule
 
 Infer key strategy in this order:
@@ -74,6 +85,7 @@ Infer key strategy in this order:
 
 | Situation | Action |
 | --- | --- |
+| request appears to be whole-document translation of a PRD/PDF/spec | block and clarify whether the user wants document translation or localization copy extraction |
 | raw-material request before the goal is confirmed | allow only lightweight preflight checks such as file type, page count, or whether text appears selectable; do not run full extraction, OCR, candidate building, or manifest generation yet |
 | `new-build` without snapshot and request is draft-only | continue, but skip high-confidence dedupe and reuse |
 | raw-material request where draft-only vs release-ready is still unclear | block and confirm the goal first |

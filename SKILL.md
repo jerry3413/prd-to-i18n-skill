@@ -1,6 +1,6 @@
 ---
 name: i18n-delivery-pipeline
-description: Orchestrate PRD-to-localization delivery workflows for app, web, and backend teams. Use when Codex needs to ingest raw PRD bundles such as Markdown, Word, PDF, XLSX, screenshots, or Figma exports; extract candidate copy and context; normalize exported localization snapshots or API results; recommend key reuse versus new keys; classify changes and release risk; generate or review translations; and emit delivery bundles such as manifest JSON, CSV tables, iOS .strings, Android strings.xml, or Web/App JSON.
+description: "Orchestrate localization-delivery workflows for app, web, and backend teams. Use when Codex needs to turn raw product materials such as PRDs, Word files, PDFs, spreadsheets, screenshots, or Figma exports into UI-copy localization packages: extract candidate user-facing copy and context, normalize exported localization snapshots or API results, recommend key reuse versus new keys, classify changes and release risk, generate or review translations, and emit delivery bundles such as manifest JSON, CSV, iOS .strings, Android strings.xml, or Web/App JSON. Do not use this skill for full-document translation when the user wants the entire PRD or spec translated word-for-word."
 ---
 
 # I18n Delivery Pipeline
@@ -8,6 +8,8 @@ description: Orchestrate PRD-to-localization delivery workflows for app, web, an
 ## Overview
 
 Turn fragmented localization inputs into one canonical i18n manifest and a release-ready delivery bundle. Treat API access as optional: the default operating mode is exported snapshot mode, with API mode as an adapter on top of the same workflow.
+
+This skill is for localization delivery, not for translating whole PRDs or whole specification documents line by line. If the user actually wants a full document translation, stop and clarify that before entering the pipeline.
 
 ## Keep It Foolproof
 
@@ -18,6 +20,7 @@ Optimize for the simplest possible user interaction:
 - accept one export folder before asking for explicit file descriptors
 - ask for one blocking item at a time
 - when the request starts from a raw PRD, PDF, Word doc, or spec bundle, ask in plain language what outcome the user wants before any heavy extraction, OCR, or manifest work
+- if the user appears to want the entire PRD or PDF translated as a document, do not treat that as an i18n-delivery request until they confirm they actually want copy extraction or localization packaging
 - explain practical consequences in plain language instead of leading with internal jargon
 
 User-facing defaults:
@@ -46,11 +49,15 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    - `translation-fix`
    - `export-only`
    Ask only for missing blocking inputs.
+   If the user appears to want full-document translation, stop and clarify whether they want:
+   - full document translation
+   - localization copy extraction and delivery
    For raw PRD/PDF/Word requests, first ask in plain language whether the user wants:
    - a simple draft list of translatable copy
    - a final localization package that the team can import or hand to developers
    Only after the user confirms the final delivery path should you require the current localization baseline and target outputs.
    Before that question is answered, allow only lightweight preflight checks such as file type, page count, or whether the document appears to contain selectable text. Do not run full text extraction, OCR, copy-candidate extraction, or manifest building yet.
+   The first substantive reply for raw materials must contain the goal-confirmation question before any suggestion that you are about to extract, translate, or generate output files.
    In user-facing replies, describe the task in plain language instead of requiring the user to know the mode name.
 2. Collect the source artifacts.
    For `new-build` and `change-sync`, require a PRD, a copy list, or another reliable source of changed text.
@@ -155,6 +162,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 - Treat `L3` as new key plus deprecate or inactivate the old key.
 - Auto-escalate when placeholders are ambiguous, terminology conflicts, or length is strict.
 - If a raw-material request never confirmed whether the user wants a simple draft or a final delivery package, stop and clarify the goal before heavy extraction or before claiming final translation or delivery output.
+- If the user wants the whole PRD or whole PDF translated as a document, do not force that request into this pipeline. Clarify the task first.
 
 ## Use Large-Batch Tactics
 
