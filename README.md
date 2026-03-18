@@ -196,7 +196,7 @@ python3 skills/i18n-delivery-pipeline/scripts/emit_delivery_bundle.py /tmp/i18n-
 
 ### 它怎么工作
 
-这套 workflow 故意保持“实用优先”：
+这套 workflow 保持“实用优先”：
 
 - 结构化文本优先级高于截图
 - 截图主要帮助理解场景，不作为默认原文真值
