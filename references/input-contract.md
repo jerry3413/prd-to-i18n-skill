@@ -63,8 +63,9 @@ Treat `draft-only` and `release-ready` as internal labels only. In user-facing c
 
 If the user confirms the final delivery path, then ask:
 
-1. the current localization baseline so the skill can dedupe and reuse safely
-2. the target outputs or handoff standard so the skill knows what the final delivery package must look like
+1. the target languages
+2. the current localization files or export snapshot so the skill can dedupe and reuse safely
+3. the final output format or handoff standard so the skill knows what the final delivery package must look like
 
 ## Required Inputs By Task
 
@@ -72,7 +73,7 @@ Do not treat PRD as globally mandatory. Match the requirement to the task:
 
 - `new-build`
   Require a PRD, a structured copy list, or another reliable source of new text.
-  If the request is a final delivery request rather than a simple draft, also require the current localization snapshot plus target output formats or handoff standard.
+  If the request is a final delivery request rather than a simple draft, also require target languages, the current localization snapshot, plus target output formats or handoff standard.
 - `change-sync`
   Require changed source text such as a PRD diff, copy list, or updated source file, plus the current localization snapshot.
 - `dedupe`

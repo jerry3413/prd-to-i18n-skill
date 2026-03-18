@@ -55,7 +55,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    For raw PRD/PDF/Word requests, first ask in plain language whether the user wants:
    - a simple draft list of translatable copy
    - a final localization package that the team can import or hand to developers
-   Only after the user confirms the final delivery path should you require the current localization baseline and target outputs.
+   Only after the user confirms the final delivery path should you require the target languages, the current localization files or export snapshot, and the target outputs.
    Before that question is answered, allow only lightweight preflight checks such as file type, page count, or whether the document appears to contain selectable text. Do not run full text extraction, OCR, copy-candidate extraction, or manifest building yet.
    The first substantive reply for raw materials must contain the goal-confirmation question before any suggestion that you are about to extract, translate, or generate output files.
    In user-facing replies, describe the task in plain language instead of requiring the user to know the mode name.
@@ -63,7 +63,8 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    For `new-build` and `change-sync`, require a PRD, a copy list, or another reliable source of changed text.
    For `translation-fix`, `dedupe`, and `export-only`, do not require a PRD when the task can be completed safely without it.
    If the user confirms the task is a final delivery request rather than a simple draft, also collect:
-   - the current localization baseline for dedupe and reuse
+   - the target languages
+   - the current localization files or export snapshot for dedupe and reuse
    - the target outputs or handoff standard for final delivery
    Apply the source-priority rule from [references/decision-tables.md](references/decision-tables.md).
    Accept raw source bundles such as:

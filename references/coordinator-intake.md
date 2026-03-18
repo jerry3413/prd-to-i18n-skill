@@ -111,9 +111,10 @@ Prefer file or field requests over open-ended prompts. Instead of asking for “
 Good:
 
 - “Do you want the whole document translated, or do you want me to pull out the user-facing copy and turn it into a localization package? Those are two different workflows.”
-- “Before I spend time pulling text out of this document, do you want me to first整理一版待翻译文案, or do you want a final multi-language package your team can use directly? If you want the final package, please also send the current localization export and tell me the final output format.”
-- “Please provide a folder that contains iOS `.strings`, Android `strings.xml`, JSON locale files, or CSV exports so I can run dedupe and reuse checks.”
-- “Please tell me what final handoff you need: iOS `.strings`, Android `strings.xml`, Web/App JSON, CSV, manifest only, or a custom import schema. Without that, I can only stop at a draft manifest or CSV.”
+- “Before I spend time pulling text out of this document, please tell me which result you want: 1. I first整理一版待翻译文案, or 2. I directly prepare a deliverable multi-language package for your team.”
+- “If you want the deliverable package, please also tell me three things: which languages you need, whether you already have existing localization files, and which final format you want.”
+- “If you already have localization files, send me the folder directly. iOS `.strings`, Android `strings.xml`, JSON, and CSV are all fine.”
+- “Please tell me the final format you want, for example CSV, iOS `.strings`, Android `strings.xml`, Web/App JSON, or all of them. Without that, I can only stop at a draft list.”
 - “For `app_identify_psy_photos`, please provide `screen`, `component`, and `background`. Without that, I will mark it `review-required`.”
 - “This PDF page appears to be scanned. Please provide a text export or confirm the copied sentence manually for the pricing section.”
 - “If your runtime has no built-in vision, tell me whether you have configured an external OCR/vision extension or only local OCR.”
@@ -145,8 +146,8 @@ PRD is present. Screenshots are missing but optional for this batch.
 </missing_required>
 <questions>
   <question id="goal">
-    <why>I need to know whether you want a simple draft list of translatable copy, or a final package your team can import or hand to developers.</why>
-    <accepted_formats>Reply with either “draft copy list” or “final delivery package”. If you want the final package, also include the current export folder and the target outputs you need.</accepted_formats>
+    <why>I need to know whether you want a draft list of translatable copy first, or a final multi-language package your team can use directly.</why>
+    <accepted_formats>Reply with either “draft copy list” or “deliverable package”. If you want the deliverable package, also include the languages you need, any existing localization files, and the final format you want.</accepted_formats>
     <fallback>If you do not decide yet, I will stop before heavy extraction and will not pretend I can finish final delivery.</fallback>
   </question>
 </questions>
@@ -225,13 +226,49 @@ I can start from this PRD, but I should confirm the target outcome before doing 
 </missing_required>
 <questions>
   <question id="goal">
-    <why>I need to know whether you want me to first整理一版待翻译文案, or whether you want a final package your team can use directly. The final package path also needs the current catalog and the handoff format.</why>
-    <accepted_formats>Reply with either “draft copy list” or “final delivery package”. If you want the final package, also send an export folder / iOS .strings / Android strings.xml / CSV / JSON and the target outputs you need.</accepted_formats>
+    <why>I need to know whether you want me to first整理一版待翻译文案, or whether you want a final package your team can use directly. The final package path also needs your existing localization files, the languages you need, and the final format.</why>
+    <accepted_formats>Reply with either “draft copy list” or “deliverable package”. If you want the deliverable package, also send the languages you need, any existing iOS / Android / JSON / CSV localization files, and the final format you want.</accepted_formats>
     <fallback>If you do not decide yet, I will stop before the heavier extraction steps instead of pretending I can finish the final delivery flow.</fallback>
   </question>
 </questions>
 <next_step>
 After you confirm the goal, I will either continue with draft extraction or ask for the baseline and output target needed for final delivery.
+</next_step>
+```
+
+### Example 1A
+
+User request:
+
+```text
+文案做多语言交付
+```
+
+Coordinator response:
+
+```xml
+<task_mode>new-build</task_mode>
+<ready_now>
+I can continue with the localization-delivery path.
+</ready_now>
+<known_inputs>
+- raw PRD or PDF input
+- goal confirmed: localization delivery
+</known_inputs>
+<missing_required>
+- target languages
+- existing localization files
+- final output format
+</missing_required>
+<questions>
+  <question id="delivery_inputs">
+    <why>These three items decide whether I can dedupe safely and what final package I should generate.</why>
+    <accepted_formats>Reply with: 1. the languages you need, 2. whether you already have iOS / Android / JSON / CSV localization files, 3. the final format you want such as CSV, manifest JSON, iOS, Android, Web JSON, or all of them.</accepted_formats>
+    <fallback>If you do not have existing localization files yet, say “no existing files” and I will continue in a lower-confidence path for dedupe and reuse.</fallback>
+  </question>
+</questions>
+<next_step>
+After I receive those three items, I will continue with extraction and package building.
 </next_step>
 ```
 
