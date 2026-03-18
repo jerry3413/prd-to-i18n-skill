@@ -66,7 +66,7 @@ When asking for data, prefer:
 Before processing multimodal evidence, run the capability route. See [Capability Routing](capability-routing.md).
 Use [Decision Tables](decision-tables.md) for source priority, fallback behavior, and human-gate triggers.
 
-When Claude Code project subagents are available, the main thread should still own orchestration. If you use the optional `i18n-coordinator` helper agent, use it only to draft a readiness summary, then return to the main thread before dispatching translators or reviewers.
+When Claude Code project subagents are available, the main thread should still own orchestration. If you use the optional `i18n-coordinator` helper template from `assets/helper-agents/`, use it only to draft a readiness summary, then return to the main thread before dispatching translators or reviewers.
 
 ## What Counts As Blocking
 

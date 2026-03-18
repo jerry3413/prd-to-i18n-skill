@@ -32,7 +32,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 
 - Read [references/decision-tables.md](references/decision-tables.md) before making source-priority, fallback, or human-gate decisions.
 - Read [references/coordinator-intake.md](references/coordinator-intake.md).
-- Treat `.claude/agents/i18n-coordinator.md` as an optional intake helper, not the owner of nested delegation.
+- Treat `assets/helper-agents/i18n-coordinator.md` as an optional project-level helper template, not the owner of nested delegation.
 - Keep intake in the foreground whenever the workflow may need user clarification.
 
 ## Run The Workflow
@@ -227,5 +227,5 @@ Allow review in parallel only for slices that already satisfied the parallel tra
 
 Reuse the sample files in `assets/` when the user has only exported resource files and an informal context list.
 Use `assets/sample-prd.md` as a minimal raw-PRD example for the new ingestion and extraction stages.
-If the project supports Claude Code subagents, keep the main conversation as coordinator and use `i18n-translator` plus `i18n-reviewer` as leaf workers.
+If the project supports Claude Code subagents, keep the main conversation as coordinator and use `i18n-translator` plus `i18n-reviewer` as leaf workers. Optional project-level agent templates live in `assets/helper-agents/` if you want to copy them into `.claude/agents/`.
 Use the MCP template in `assets/vision-mcp-template.json` only as a starting point. Keep real API keys in environment variables or local scope, not inside the skill.

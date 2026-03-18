@@ -2,14 +2,9 @@
 
 ## English
 
-Turn messy PRDs, screenshots, PDFs, and spreadsheets into clean i18n delivery packs.
+No need to clean up copy first. Feed the skill your PRDs, screenshots, PDFs, and spreadsheets, and it helps turn that mess into ready-to-ship i18n delivery bundles.
 
-This repo contains a reusable AI skill for localization workflows. It is built for teams that need to:
-
-- extract UI copy from raw product materials
-- reuse or generate i18n keys
-- translate and review copy with AI
-- export ready-to-ship bundles for iOS, Android, Web, and CSV flows
+This repository is now a single self-contained skill. The repo root is the skill root, so GitHub installs and zip downloads are much less confusing.
 
 ### Workflow At A Glance
 
@@ -35,24 +30,42 @@ flowchart LR
 ### Repo Structure
 
 ```text
-.claude/agents/
-skills/i18n-delivery-pipeline/
+SKILL.md
+agents/
+assets/
+references/
+scripts/
 ```
 
-- `skills/i18n-delivery-pipeline` is the skill itself
-- `.claude/agents` contains the helper agents used by the workflow
+- the repo root is the installable skill
+- `assets/helper-agents/` contains optional project-level helper agent templates
 
-### Install Into Another Workspace
+### Install
 
-From the target workspace root:
+Install directly from GitHub with the skill installer:
 
 ```bash
-cp -R /path/to/this-repo/skills .
-mkdir -p .claude/agents
-cp /path/to/this-repo/.claude/agents/i18n-*.md .claude/agents/
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py --repo jerry3413/prd-to-i18n-skill --path .
 ```
 
-Then reopen the workspace or restart your coding agent.
+Or copy the whole repo root into your local skills directory:
+
+```bash
+cp -R /path/to/this-repo ~/.codex/skills/i18n-delivery-pipeline
+```
+
+Restart Codex after installing.
+
+### Optional Helper Agents
+
+If you want the extra coordinator, translator, and reviewer helpers as project-level agents:
+
+```bash
+mkdir -p .claude/agents
+cp /path/to/this-repo/assets/helper-agents/i18n-*.md .claude/agents/
+```
+
+These templates are optional. The skill itself is designed to work without them.
 
 ### Quick Start
 
@@ -61,9 +74,9 @@ Then reopen the workspace or restart your coding agent.
 If you only have a PRD bundle:
 
 ```bash
-python3 skills/i18n-delivery-pipeline/scripts/ingest_artifacts.py ./prd-bundle --output /tmp/evidence.json
-python3 skills/i18n-delivery-pipeline/scripts/extract_copy_candidates.py /tmp/evidence.json --output /tmp/copy-candidates.json
-python3 skills/i18n-delivery-pipeline/scripts/build_manifest_stub.py /tmp/copy-candidates.json --task-mode new-build --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json
+python3 scripts/ingest_artifacts.py ./prd-bundle --output /tmp/evidence.json
+python3 scripts/extract_copy_candidates.py /tmp/evidence.json --output /tmp/copy-candidates.json
+python3 scripts/build_manifest_stub.py /tmp/copy-candidates.json --task-mode new-build --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json
 ```
 
 #### 2. Start From Existing Localization Exports
@@ -71,15 +84,15 @@ python3 skills/i18n-delivery-pipeline/scripts/build_manifest_stub.py /tmp/copy-c
 If you already exported current strings:
 
 ```bash
-python3 skills/i18n-delivery-pipeline/scripts/normalize_snapshot.py --input-dir ./exports --metadata ./context.csv --output /tmp/i18n-snapshot.json
-python3 skills/i18n-delivery-pipeline/scripts/build_manifest_stub.py /tmp/i18n-snapshot.json --task-mode change-sync --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json
+python3 scripts/normalize_snapshot.py --input-dir ./exports --metadata ./context.csv --output /tmp/i18n-snapshot.json
+python3 scripts/build_manifest_stub.py /tmp/i18n-snapshot.json --task-mode change-sync --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json
 ```
 
 #### 3. Run QA And Export
 
 ```bash
-python3 skills/i18n-delivery-pipeline/scripts/qa_manifest.py /tmp/i18n-manifest.json --report /tmp/i18n-qa.json
-python3 skills/i18n-delivery-pipeline/scripts/emit_delivery_bundle.py /tmp/i18n-manifest.json --out-dir /tmp/delivery-bundle
+python3 scripts/qa_manifest.py /tmp/i18n-manifest.json --report /tmp/i18n-qa.json
+python3 scripts/emit_delivery_bundle.py /tmp/i18n-manifest.json --out-dir /tmp/delivery-bundle
 ```
 
 ### How It Thinks
@@ -90,21 +103,21 @@ The workflow stays practical on purpose:
 - screenshots help with scene understanding, not source-of-truth text
 - short ambiguous labels must ask for context
 - high-risk copy stays conservative and human-gated
-- exporters adapt one canonical manifest into multiple platform formats
+- one canonical manifest fans out into multiple platform formats
 
 ### Validation
 
 Run the built-in smoke checks:
 
 ```bash
-python3 skills/i18n-delivery-pipeline/scripts/run_smoke_evals.py
+python3 scripts/run_smoke_evals.py
 ```
 
 ### Good Fit
 
 This skill is a good fit if your team has any of these problems:
 
-- product managers create copy in PRDs instead of clean spreadsheets
+- product managers write copy in PRDs instead of clean spreadsheets
 - translation keys are easy to duplicate and hard to find
 - screenshots and design files carry important context
 - review quality is inconsistent
@@ -114,14 +127,9 @@ This skill is a good fit if your team has any of these problems:
 
 ## 中文
 
-把 PRD、截图、PDF、表格里散落的文案，整理成能直接交付的多语言包。
+不用先整理文案表，直接把 PRD、截图、PDF、表格扔进来，这套 skill 会帮你把散落的文案收成能交付的多语言包。
 
-这个仓库里是一套可复用的多语言 workflow skill，适合这些场景：
-
-- 从原始产品材料里抽取 UI 文案
-- 复用或生成 i18n key
-- 用 AI 做翻译和审核
-- 导出 iOS、Android、Web、CSV 可直接接入的交付包
+现在这个仓库本身就是一个完整的 skill。也就是说，仓库根目录就是 skill 根目录，所以以后不管是 GitHub 安装还是手动下 zip，都会顺很多。
 
 ### 流程一览
 
@@ -147,24 +155,42 @@ flowchart LR
 ### 仓库结构
 
 ```text
-.claude/agents/
-skills/i18n-delivery-pipeline/
+SKILL.md
+agents/
+assets/
+references/
+scripts/
 ```
 
-- `skills/i18n-delivery-pipeline` 是 skill 本体
-- `.claude/agents` 里是 workflow 用到的辅助 agent
+- 仓库根目录就是可安装的 skill
+- `assets/helper-agents/` 里放的是可选的项目级 helper agent 模板
 
-### 安装到其他工作区
+### 安装方式
 
-在目标 workspace 根目录执行：
+直接用 skill 安装器从 GitHub 装：
 
 ```bash
-cp -R /path/to/this-repo/skills .
-mkdir -p .claude/agents
-cp /path/to/this-repo/.claude/agents/i18n-*.md .claude/agents/
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py --repo jerry3413/prd-to-i18n-skill --path .
 ```
 
-然后重新打开 workspace，或者重启你的 coding agent。
+或者直接把整个仓库根目录复制到本地 skills 目录：
+
+```bash
+cp -R /path/to/this-repo ~/.codex/skills/i18n-delivery-pipeline
+```
+
+装完后重启 Codex。
+
+### 可选 Helper Agents
+
+如果你还想把 coordinator、translator、reviewer 这几个辅助角色装到项目里，可以再执行：
+
+```bash
+mkdir -p .claude/agents
+cp /path/to/this-repo/assets/helper-agents/i18n-*.md .claude/agents/
+```
+
+这一步不是必须的。没有它们，skill 本体也能工作。
 
 ### 快速开始
 
@@ -173,9 +199,9 @@ cp /path/to/this-repo/.claude/agents/i18n-*.md .claude/agents/
 如果你手头只有 PRD、Word、PDF、表格、截图这些原始材料：
 
 ```bash
-python3 skills/i18n-delivery-pipeline/scripts/ingest_artifacts.py ./prd-bundle --output /tmp/evidence.json
-python3 skills/i18n-delivery-pipeline/scripts/extract_copy_candidates.py /tmp/evidence.json --output /tmp/copy-candidates.json
-python3 skills/i18n-delivery-pipeline/scripts/build_manifest_stub.py /tmp/copy-candidates.json --task-mode new-build --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json
+python3 scripts/ingest_artifacts.py ./prd-bundle --output /tmp/evidence.json
+python3 scripts/extract_copy_candidates.py /tmp/evidence.json --output /tmp/copy-candidates.json
+python3 scripts/build_manifest_stub.py /tmp/copy-candidates.json --task-mode new-build --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json
 ```
 
 #### 2. 从现有多语言导出开始
@@ -183,15 +209,15 @@ python3 skills/i18n-delivery-pipeline/scripts/build_manifest_stub.py /tmp/copy-c
 如果你已经导出了当前多语言资源：
 
 ```bash
-python3 skills/i18n-delivery-pipeline/scripts/normalize_snapshot.py --input-dir ./exports --metadata ./context.csv --output /tmp/i18n-snapshot.json
-python3 skills/i18n-delivery-pipeline/scripts/build_manifest_stub.py /tmp/i18n-snapshot.json --task-mode change-sync --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json
+python3 scripts/normalize_snapshot.py --input-dir ./exports --metadata ./context.csv --output /tmp/i18n-snapshot.json
+python3 scripts/build_manifest_stub.py /tmp/i18n-snapshot.json --task-mode change-sync --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json
 ```
 
 #### 3. 跑校验并导出
 
 ```bash
-python3 skills/i18n-delivery-pipeline/scripts/qa_manifest.py /tmp/i18n-manifest.json --report /tmp/i18n-qa.json
-python3 skills/i18n-delivery-pipeline/scripts/emit_delivery_bundle.py /tmp/i18n-manifest.json --out-dir /tmp/delivery-bundle
+python3 scripts/qa_manifest.py /tmp/i18n-manifest.json --report /tmp/i18n-qa.json
+python3 scripts/emit_delivery_bundle.py /tmp/i18n-manifest.json --out-dir /tmp/delivery-bundle
 ```
 
 ### 它怎么工作
@@ -209,7 +235,7 @@ python3 skills/i18n-delivery-pipeline/scripts/emit_delivery_bundle.py /tmp/i18n-
 运行内置 smoke check：
 
 ```bash
-python3 skills/i18n-delivery-pipeline/scripts/run_smoke_evals.py
+python3 scripts/run_smoke_evals.py
 ```
 
 ### 适合什么团队
