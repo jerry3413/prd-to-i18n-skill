@@ -17,6 +17,7 @@ Optimize for the simplest possible user interaction:
 - do not ask the user to choose internal modes or naming policies unless policy is the task
 - accept one export folder before asking for explicit file descriptors
 - ask for one blocking item at a time
+- when the request starts from a raw PRD, PDF, Word doc, or spec bundle, pause to confirm whether the user wants draft-only output or release-ready delivery
 - explain practical consequences in plain language instead of leading with internal jargon
 
 User-facing defaults:
@@ -45,10 +46,14 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    - `translation-fix`
    - `export-only`
    Ask only for missing blocking inputs.
+   For raw PRD/PDF/Word requests, first confirm whether the user wants draft-only output or release-ready delivery. Only after the user confirms release-ready delivery should you require the current localization baseline and target outputs.
    In user-facing replies, describe the task in plain language instead of requiring the user to know the mode name.
 2. Collect the source artifacts.
    For `new-build` and `change-sync`, require a PRD, a copy list, or another reliable source of changed text.
    For `translation-fix`, `dedupe`, and `export-only`, do not require a PRD when the task can be completed safely without it.
+   If the user confirms the task is release-ready rather than draft-only, also collect:
+   - the current localization baseline for dedupe and reuse
+   - the target outputs or handoff standard for final delivery
    Apply the source-priority rule from [references/decision-tables.md](references/decision-tables.md).
    Accept raw source bundles such as:
    - Markdown or text PRDs
@@ -135,6 +140,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 13. Emit delivery bundles.
    Run `scripts/emit_delivery_bundle.py` to generate manifest JSON, flat CSV, Web/App JSON, iOS `.strings`, and Android `strings.xml`.
    Keep canonical placeholders in the manifest and let exporters adapt them to platform-native formats.
+   If target outputs are still unknown, stop at a draft manifest or CSV and say the delivery contract is not frozen yet.
 
 ## Apply The Policy
 
@@ -144,6 +150,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 - Treat `L2` as AI recommendation plus human confirmation.
 - Treat `L3` as new key plus deprecate or inactivate the old key.
 - Auto-escalate when placeholders are ambiguous, terminology conflicts, or length is strict.
+- If a raw-material request never confirmed whether it is draft-only or release-ready, stop and clarify the goal before claiming final translation or delivery output.
 
 ## Use Large-Batch Tactics
 

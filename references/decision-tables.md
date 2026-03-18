@@ -36,6 +36,29 @@ Precedence:
 
 Do not ask the user to choose the mode unless they are explicitly configuring policy.
 
+## Delivery Intent Rule
+
+Treat the task as `delivery-intent` when the user is not merely asking for an ad hoc translation, but is trying to prepare localization for release, handoff, import, or team consumption.
+
+Common signals:
+
+- the input is a PRD, release note, Confluence export, Word spec, or PDF requirement bundle
+- the user says things like `prepare i18n`, `多语言`, `本地化`, `交付`, `接入`, `上线`, `ship`, `handoff`, `release`, `import`, or `导出`
+- the document itself describes supported locales, release scope, or platform rollout
+
+If `delivery-intent` is inferred from raw materials instead of stated explicitly, confirm the goal with the user before moving from extraction into translation or export.
+
+When `delivery-intent` is true:
+
+1. ask for the current localization baseline so the workflow can do dedupe, reuse, and change-safe key decisions
+2. ask for the target outputs or handoff standard so the workflow knows what final package to emit
+
+Only skip these questions when one of the following is also true:
+
+- the user explicitly says `draft only`, `just translate`, `just extract copy`, or another phrase that clearly opts out of release-ready delivery
+- the baseline or output targets are already present in the provided files
+- team defaults are already known in the workspace and are safe to apply
+
 ## Key Strategy Rule
 
 Infer key strategy in this order:
@@ -49,11 +72,14 @@ Infer key strategy in this order:
 
 | Situation | Action |
 | --- | --- |
-| `new-build` without snapshot | continue, but skip high-confidence dedupe and reuse |
+| `new-build` without snapshot and request is draft-only | continue, but skip high-confidence dedupe and reuse |
+| raw-material request where draft-only vs release-ready is still unclear | block and confirm the goal first |
+| `new-build` without snapshot and request looks like release prep | block and ask for the current catalog or key baseline first |
 | `change-sync` or `dedupe` without snapshot | block and ask for the current catalog |
 | ambiguous short label without context | continue in downgraded mode and mark for human review |
 | medium/high-risk copy from OCR or vision only | require verified text before completion |
 | export requested without target outputs | ask for outputs before export |
+| release-intent request without target outputs or handoff standard | block and ask for target outputs before final translation/export work |
 | locale coverage unclear | ask for target locales, otherwise keep only the source locale final |
 
 ## Human Gate Rule

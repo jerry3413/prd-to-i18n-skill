@@ -55,12 +55,22 @@ If the user starts from raw PRD materials instead of exported catalogs, prefer:
 
    `python3 scripts/build_manifest_stub.py /tmp/copy-candidates.json --task-mode new-build --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json`
 
+For work that starts from raw materials, ask one thing early:
+
+1. whether the user wants `draft-only` output or `release-ready` delivery
+
+If the user confirms `release-ready`, then ask:
+
+1. the current localization baseline so the skill can dedupe and reuse safely
+2. the target outputs or handoff standard so the skill knows what the final delivery package must look like
+
 ## Required Inputs By Task
 
 Do not treat PRD as globally mandatory. Match the requirement to the task:
 
 - `new-build`
   Require a PRD, a structured copy list, or another reliable source of new text.
+  If the request is release-ready rather than draft-only, also require the current localization snapshot plus target output formats or handoff standard.
 - `change-sync`
   Require changed source text such as a PRD diff, copy list, or updated source file, plus the current localization snapshot.
 - `dedupe`
@@ -93,6 +103,8 @@ At minimum, ask the team to export or provide:
 - `source_text`
 
 With only these fields, the skill can do basic duplicate checks, key suggestions, and bundle generation.
+
+Without a snapshot, do not present dedupe or reuse as high-confidence. For release-ready requests, ask for the baseline first unless the user explicitly accepts draft-only output.
 
 If the source comes from a screenshot or PDF instead of a snapshot, require at least:
 
@@ -179,6 +191,24 @@ The normalizer should treat common aliases as the same logical field:
 If data is incomplete, continue with the highest safe mode and record the downgrade in the manifest.
 
 In user-facing conversation, avoid asking the user to choose `basic`, `review`, or `strict`. Infer the mode from the inputs and explain only the practical effect, for example: “I can proceed, but duplicate detection confidence will be lower.”
+
+## Draft-Only Versus Release-Ready
+
+When the user provides a PRD, PDF, or other raw product bundle, do not assume they only want ad hoc translation.
+
+Use this split:
+
+- `draft-only`
+  The user explicitly wants extraction, rough translation, or a draft table only.
+- `release-ready`
+  The user is preparing localization for handoff, import, delivery, or release.
+
+For `release-ready`, collect:
+
+- the current localization baseline
+- target outputs or handoff standard
+
+If either is missing, do not silently invent a final delivery format. Stop at a draft manifest or CSV only after explaining the downgrade.
 
 ## Ambiguous Context Rule
 

@@ -30,6 +30,7 @@ Anthropic's latest guidance favors keeping clarification-heavy work in the main 
    - PRD
    - PDF attachments
    - screenshots or Figma export
+   - whether the request is `draft-only` or `delivery-intent`
    - runtime capability path: `text-first`, `native-vision`, `vision-extension`, `local-ocr`, or `manual-fallback`
    - localization snapshot or API result
    - context sidecar
@@ -56,6 +57,8 @@ Prefer the simplest interpretation first:
 - if the user gives a key and one string, start from `translation-fix`
 - if the user gives a manifest or only asks for output files, start from `export-only`
 - if the user gives a folder of exported resources, accept the folder directly instead of asking them to enumerate file descriptors
+- if the user gives a PRD, PDF, Word spec, or release document, do not jump straight into translation; first confirm whether they want a draft table or release-ready delivery
+- after the user confirms `release-ready`, ask for the current localization baseline and the target outputs
 
 When asking for data, prefer:
 
@@ -71,10 +74,13 @@ When Claude Code project subagents are available, the main thread should still o
 ## What Counts As Blocking
 
 - no source text or PRD for a `new-build`
+- no confirmed goal yet when the request starts from raw PRD/PDF/Word materials and it is still unclear whether the user wants draft-only output or release-ready delivery
 - no current snapshot when the user asks for dedupe, reuse, or change sync
+- no current snapshot when the request is clearly release prep or handoff work and the user has not opted into draft-only mode
 - no business context for ambiguous or high-risk copy
 - no reliable text extraction for image-only or scanned high-risk content
 - no target output format when the user explicitly asks for delivery bundles
+- no target output format or handoff standard when the request is clearly release prep, handoff, import, or team delivery
 - no owner when high-risk content must route to human approval
 
 PRD is not blocking for `translation-fix`, `dedupe`, or `export-only`.
@@ -97,7 +103,9 @@ Prefer file or field requests over open-ended prompts. Instead of asking for “
 
 Good:
 
+- “Before I continue, should I treat this as draft-only extraction/translation, or as release-ready localization delivery? If it is release-ready, please also send the current localization export and tell me the final output format.”
 - “Please provide a folder that contains iOS `.strings`, Android `strings.xml`, JSON locale files, or CSV exports so I can run dedupe and reuse checks.”
+- “Please tell me what final handoff you need: iOS `.strings`, Android `strings.xml`, Web/App JSON, CSV, manifest only, or a custom import schema. Without that, I can only stop at a draft manifest or CSV.”
 - “For `app_identify_psy_photos`, please provide `screen`, `component`, and `background`. Without that, I will mark it `review-required`.”
 - “This PDF page appears to be scanned. Please provide a text export or confirm the copied sentence manually for the pricing section.”
 - “If your runtime has no built-in vision, tell me whether you have configured an external OCR/vision extension or only local OCR.”
@@ -121,20 +129,20 @@ PRD is present. Screenshots are missing but optional for this batch.
 </ready_now>
 <known_inputs>
 - PRD markdown
-- No localization snapshot yet
+- raw PRD input
 </known_inputs>
 <missing_required>
-- Current localization snapshot
+- Confirm whether the user wants draft-only output or release-ready delivery
 </missing_required>
 <questions>
-  <question id="snapshot">
-    <why>I need the current catalog to detect duplicates and recommend key reuse safely.</why>
-    <accepted_formats>An export folder, or iOS .strings, Android strings.xml, CSV export, JSON catalog, or API adapter output</accepted_formats>
-    <fallback>If you do not have this yet, I can still extract new strings and draft key candidates, but dedupe confidence will be lower.</fallback>
+  <question id="goal">
+    <why>I need to know whether this is a draft-only request or a release-ready delivery request before I decide which follow-up inputs are truly required.</why>
+    <accepted_formats>Reply with either `draft-only`, or `release-ready` plus the current export folder and the target outputs you need</accepted_formats>
+    <fallback>If you do not decide yet, I will stop at draft extraction or a draft manifest instead of pretending I can finish final delivery.</fallback>
   </question>
 </questions>
 <next_step>
-After I receive the snapshot, I will normalize it and produce a manifest candidate.
+After you confirm the goal, I will either continue with draft extraction or ask for the baseline and output target needed for release-ready delivery.
 </next_step>
 ```
 
@@ -168,19 +176,20 @@ I can start extracting candidate strings from the PRD now.
 </ready_now>
 <known_inputs>
 - PRD markdown
+- raw PRD input
 </known_inputs>
 <missing_required>
-- Current localization snapshot
+- Confirm whether the user wants draft-only output or release-ready delivery
 </missing_required>
 <questions>
-  <question id="snapshot">
-    <why>I need the existing catalog to detect duplicate keys and reuse opportunities.</why>
-    <accepted_formats>An export folder, or iOS .strings, Android strings.xml, CSV, JSON, or API output</accepted_formats>
-    <fallback>Without it, I will continue in basic mode and produce new-key suggestions only.</fallback>
+  <question id="goal">
+    <why>I need to know whether you want a draft translation table or a release-ready localization package. The release-ready path also requires the current catalog and final handoff format.</why>
+    <accepted_formats>Reply with either `draft-only`, or `release-ready` plus an export folder / iOS .strings / Android strings.xml / CSV / JSON and the target outputs you need</accepted_formats>
+    <fallback>If you do not decide yet, I will stop at draft extraction or a draft manifest instead of pretending I can finish the final delivery flow.</fallback>
   </question>
 </questions>
 <next_step>
-Once the snapshot arrives, I will normalize it and compare it against the extracted strings.
+After you confirm the goal, I will either continue with draft extraction or ask for the baseline and output target needed for release-ready delivery.
 </next_step>
 ```
 
