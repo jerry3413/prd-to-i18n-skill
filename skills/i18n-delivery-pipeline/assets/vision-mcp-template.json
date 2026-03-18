@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "vision-ocr": {
+      "type": "http",
+      "url": "${VISION_MCP_URL:-https://api.example.com/mcp}",
+      "headers": {
+        "Authorization": "Bearer ${VISION_API_KEY}"
+      }
+    }
+  }
+}

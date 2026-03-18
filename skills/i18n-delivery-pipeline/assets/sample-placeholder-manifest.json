@@ -1,0 +1,73 @@
+{
+  "manifest_version": "1.1",
+  "source_locale": "en",
+  "key_mode": "canonical",
+  "task_mode": "translation-fix",
+  "generated_at": "2026-03-17T09:30:00Z",
+  "target_locales": ["en", "zh-Hans"],
+  "required_locale_coverage": ["en", "zh-Hans"],
+  "target_outputs": ["manifest", "json", "ios", "android"],
+  "max_entries_per_slice": 50,
+  "revision_loop_limit": 2,
+  "entries": [
+    {
+      "key": "app_gallery_banner_photos_remaining",
+      "key_candidate": "app_gallery_banner_photos_remaining",
+      "screen": "gallery",
+      "component": "banner",
+      "intent": "inform_remaining_photos",
+      "source_text": "You have {count} photos remaining",
+      "background": "Banner shown near the top of the gallery when a quota applies.",
+      "source_evidence": {
+        "extraction_mode": "snapshot-export",
+        "confidence": "high",
+        "verified_text": true,
+        "artifacts": [
+          {
+            "kind": "json",
+            "path": "/exports/web/en.json",
+            "locale": "en",
+            "platform": "web"
+          }
+        ]
+      },
+      "screenshot_ref": "gallery-banner-01",
+      "existing_match": {
+        "status": "none",
+        "matched_key": null,
+        "confidence": 0.0
+      },
+      "change_level": "L1",
+      "risk_level": "low",
+      "message_format": "named-template",
+      "placeholders": [
+        {
+          "name": "count",
+          "type": "number",
+          "canonical": "{count}",
+          "ios": "%1$ld",
+          "android": "%1$d",
+          "web": "{count}"
+        }
+      ],
+      "length_limit": {
+        "mode": "short"
+      },
+      "translations": {
+        "en": {
+          "value": "You have {count} photos remaining",
+          "status": "approved"
+        },
+        "zh-Hans": {
+          "value": "你还剩 {count} 张照片",
+          "status": "ai-reviewed"
+        }
+      },
+      "audit": {
+        "ai_review": "pass",
+        "human_review_required": false,
+        "owner": "gallery-owner"
+      }
+    }
+  ]
+}

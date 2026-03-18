@@ -1,0 +1,123 @@
+{
+  "manifest_version": "1.1",
+  "source_locale": "en",
+  "key_mode": "canonical",
+  "task_mode": "change-sync",
+  "generated_at": "2026-03-17T09:00:00Z",
+  "target_locales": ["en", "zh-Hans", "de"],
+  "required_locale_coverage": ["en", "zh-Hans", "de"],
+  "target_outputs": ["manifest", "csv", "json", "ios", "android"],
+  "max_entries_per_slice": 50,
+  "revision_loop_limit": 2,
+  "entries": [
+    {
+      "key": "app_identify_overlay_tip_adjust_capture_range",
+      "key_candidate": "app_identify_overlay_tip_adjust_capture_range",
+      "screen": "identify_camera",
+      "component": "overlay_tip",
+      "intent": "guide_crop_range",
+      "source_text": "Adjust the image to the appropriate range",
+      "background": "Shown while guiding the user to align the coin inside the suggested capture area.",
+      "source_evidence": {
+        "extraction_mode": "snapshot-export",
+        "confidence": "high",
+        "verified_text": true,
+        "artifacts": [
+          {
+            "kind": "ios",
+            "path": "/exports/en.strings",
+            "locale": "en",
+            "platform": "ios"
+          }
+        ]
+      },
+      "screenshot_ref": "identify-camera-01",
+      "existing_match": {
+        "status": "fuzzy",
+        "matched_key": "app_identify_psy_adjust_the_image_to_the_appropriate_range",
+        "confidence": 0.78
+      },
+      "change_level": "L2",
+      "risk_level": "low",
+      "message_format": "plain",
+      "placeholders": [],
+      "length_limit": {
+        "mode": "short"
+      },
+      "translations": {
+        "en": {
+          "value": "Adjust the image to the appropriate range",
+          "status": "approved"
+        },
+        "zh-Hans": {
+          "value": "请将图片调整到合适范围内",
+          "status": "ai-reviewed"
+        },
+        "de": {
+          "value": "Passe das Bild an den passenden Bereich an",
+          "status": "ai-reviewed"
+        }
+      },
+      "audit": {
+        "ai_review": "pass",
+        "human_review_required": false,
+        "owner": "identify-owner"
+      }
+    },
+    {
+      "key": "app_rewarded_ad_toast_daily_limit_reached",
+      "key_candidate": "app_rewarded_ad_toast_daily_limit_reached",
+      "screen": "rewarded_ad",
+      "component": "toast",
+      "intent": "inform_daily_ad_limit_reached",
+      "source_text": "Ad limit reached today",
+      "background": "Toast shown after the user taps watch ad but has already reached the daily cap.",
+      "source_evidence": {
+        "extraction_mode": "snapshot-export",
+        "confidence": "high",
+        "verified_text": true,
+        "artifacts": [
+          {
+            "kind": "android",
+            "path": "/exports/values/strings.xml",
+            "locale": "en",
+            "platform": "android"
+          }
+        ]
+      },
+      "screenshot_ref": "rewarded-ad-03",
+      "existing_match": {
+        "status": "none",
+        "matched_key": null,
+        "confidence": 0.0
+      },
+      "change_level": "L3",
+      "risk_level": "medium",
+      "message_format": "plain",
+      "placeholders": [],
+      "length_limit": {
+        "mode": "strict",
+        "max_chars": 28
+      },
+      "translations": {
+        "en": {
+          "value": "Ad limit reached today",
+          "status": "approved"
+        },
+        "zh-Hans": {
+          "value": "今日广告次数已达上限",
+          "status": "ai-reviewed"
+        },
+        "de": {
+          "value": "Anzeigenlimit heute erreicht",
+          "status": "ai-reviewed"
+        }
+      },
+      "audit": {
+        "ai_review": "pass",
+        "human_review_required": true,
+        "owner": "growth-owner"
+      }
+    }
+  ]
+}

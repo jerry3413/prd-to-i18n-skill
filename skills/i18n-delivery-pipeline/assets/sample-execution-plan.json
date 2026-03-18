@@ -1,0 +1,149 @@
+{
+  "plan_version": "1.0",
+  "manifest": "sample-approved-manifest.json",
+  "summary": {
+    "entry_count": 2,
+    "parallel_translation_groups": 0,
+    "parallel_review_groups": 0,
+    "serial_translation_entries": 2,
+    "serial_review_entries": 2,
+    "human_checkpoints": 1
+  },
+  "policy_notes": [
+    "Freeze manifest structure before launching translators or reviewers.",
+    "Use subagents for self-contained translation and review slices.",
+    "Keep L2/L3, high-risk, placeholder-heavy, strict-length, or ambiguous entries serial.",
+    "Route only independent low/medium-risk L0/L1 slices to parallel workers.",
+    "After any failed review, loop the failed slice back through translator then reviewer before final QA."
+  ],
+  "stages": [
+    {
+      "name": "freeze-manifest",
+      "mode": "serial",
+      "owner": "coordinator",
+      "why": "Key decisions, change classification, and risk routing share context and must be stable before delegation."
+    },
+    {
+      "name": "translation",
+      "mode": "mixed",
+      "agent": "i18n-translator",
+      "parallel_groups": [],
+      "serial_entries": [
+        {
+          "key": "app_identify_overlay_tip_adjust_capture_range",
+          "screen": "identify_camera",
+          "risk_level": "low",
+          "change_level": "L2",
+          "extraction_mode": "snapshot-export",
+          "evidence_confidence": "high",
+          "parallel_safe": false,
+          "serial_reasons": [
+            "L2 change needs fixed review gates",
+            "existing match status is fuzzy"
+          ]
+        },
+        {
+          "key": "app_rewarded_ad_toast_daily_limit_reached",
+          "screen": "rewarded_ad",
+          "risk_level": "medium",
+          "change_level": "L3",
+          "extraction_mode": "snapshot-export",
+          "evidence_confidence": "high",
+          "parallel_safe": false,
+          "serial_reasons": [
+            "L3 change needs fixed review gates",
+            "strict length limit applies",
+            "human checkpoint required"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "review",
+      "mode": "mixed",
+      "agent": "i18n-reviewer",
+      "parallel_groups": [],
+      "serial_entries": [
+        {
+          "key": "app_identify_overlay_tip_adjust_capture_range",
+          "screen": "identify_camera",
+          "risk_level": "low",
+          "change_level": "L2",
+          "extraction_mode": "snapshot-export",
+          "evidence_confidence": "high",
+          "parallel_safe": false,
+          "serial_reasons": [
+            "L2 change needs fixed review gates",
+            "existing match status is fuzzy"
+          ]
+        },
+        {
+          "key": "app_rewarded_ad_toast_daily_limit_reached",
+          "screen": "rewarded_ad",
+          "risk_level": "medium",
+          "change_level": "L3",
+          "extraction_mode": "snapshot-export",
+          "evidence_confidence": "high",
+          "parallel_safe": false,
+          "serial_reasons": [
+            "L3 change needs fixed review gates",
+            "strict length limit applies",
+            "human checkpoint required"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "revision-loop",
+      "mode": "serial",
+      "owner": "coordinator",
+      "why": "Reviewer findings must be applied to the exact failed slice, then rechecked before continuing."
+    },
+    {
+      "name": "qa-and-export",
+      "mode": "serial",
+      "owner": "coordinator",
+      "why": "Final QA and delivery bundle generation should run once on the merged manifest."
+    }
+  ],
+  "human_checkpoints": [
+    {
+      "key": "app_rewarded_ad_toast_daily_limit_reached",
+      "owner": "growth-owner",
+      "reason": [
+        "L3 change needs fixed review gates",
+        "strict length limit applies",
+        "human checkpoint required"
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "key": "app_identify_overlay_tip_adjust_capture_range",
+      "screen": "identify_camera",
+      "risk_level": "low",
+      "change_level": "L2",
+      "extraction_mode": "snapshot-export",
+      "evidence_confidence": "high",
+      "parallel_safe": false,
+      "serial_reasons": [
+        "L2 change needs fixed review gates",
+        "existing match status is fuzzy"
+      ]
+    },
+    {
+      "key": "app_rewarded_ad_toast_daily_limit_reached",
+      "screen": "rewarded_ad",
+      "risk_level": "medium",
+      "change_level": "L3",
+      "extraction_mode": "snapshot-export",
+      "evidence_confidence": "high",
+      "parallel_safe": false,
+      "serial_reasons": [
+        "L3 change needs fixed review gates",
+        "strict length limit applies",
+        "human checkpoint required"
+      ]
+    }
+  ]
+}

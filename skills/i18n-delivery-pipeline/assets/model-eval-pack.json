@@ -1,0 +1,551 @@
+{
+  "pack_version": "1.0",
+  "generated_at": "2026-03-17T13:10:00Z",
+  "success_criteria": {
+    "change_level_accuracy_min": 0.9,
+    "l2_l3_recall_min": 0.95,
+    "high_risk_l3_false_negative_max": 0,
+    "reuse_auto_precision_min": 0.98,
+    "review_human_gate_recall_min": 1.0,
+    "review_pass_precision_min": 0.95
+  },
+  "reason_code_legend": [
+    "exact-context-match",
+    "same-text-different-scene",
+    "fuzzy-match",
+    "reviewed-content-protection",
+    "placeholder-wrapper-only",
+    "placeholder-mismatch",
+    "tone-shift",
+    "action-shift",
+    "l2-change",
+    "l3-meaning-shift",
+    "high-risk",
+    "strict-length",
+    "missing-context",
+    "ambiguous-short-label",
+    "low-confidence-evidence",
+    "identity-verification"
+  ],
+  "cases": [
+    {
+      "case_id": "change_l0_placeholder_wrapper_checkout",
+      "suite": "change_classification",
+      "description": "Only the placeholder wrapper syntax changed in a payment CTA.",
+      "tags": ["change", "l0", "high-risk", "placeholder"],
+      "input": {
+        "old_entry": {
+          "key": "app_checkout_button_pay_now",
+          "source_text": "Pay {{amount}} now"
+        },
+        "candidate_entry": {
+          "screen": "checkout",
+          "component": "primary_button",
+          "intent": "confirm_payment",
+          "source_text": "Pay {amount} now",
+          "background": "Primary CTA on the checkout page after the user confirms payment details.",
+          "risk_level": "high",
+          "length_limit": {
+            "mode": "strict",
+            "max_chars": 18
+          },
+          "source_evidence": {
+            "extraction_mode": "snapshot-export",
+            "confidence": "high",
+            "verified_text": true
+          },
+          "placeholders": [
+            {
+              "name": "amount",
+              "canonical": "{amount}",
+              "ios": "%1$@",
+              "android": "%1$s",
+              "web": "{amount}"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "change_level": "L0",
+        "reuse_decision": "reuse",
+        "review_decision": "human-gate",
+        "human_review_required": true,
+        "must_ask_for_context": false,
+        "reason_codes": ["placeholder-wrapper-only", "high-risk", "strict-length"]
+      }
+    },
+    {
+      "case_id": "change_l1_toast_tone_soften",
+      "suite": "change_classification",
+      "description": "Toast wording is softened but user intent does not change.",
+      "tags": ["change", "l1", "low-risk", "toast"],
+      "input": {
+        "old_entry": {
+          "key": "app_gallery_toast_photo_saved",
+          "source_text": "Photo saved successfully"
+        },
+        "candidate_entry": {
+          "screen": "gallery",
+          "component": "toast",
+          "intent": "confirm_photo_saved",
+          "source_text": "Your photo was saved",
+          "background": "Toast shown after the user saves a photo to the gallery.",
+          "risk_level": "low",
+          "source_evidence": {
+            "extraction_mode": "snapshot-export",
+            "confidence": "high",
+            "verified_text": true
+          }
+        }
+      },
+      "expected": {
+        "change_level": "L1",
+        "reuse_decision": "reuse",
+        "review_decision": "pass",
+        "human_review_required": false,
+        "must_ask_for_context": false,
+        "reason_codes": ["tone-shift"]
+      }
+    },
+    {
+      "case_id": "change_l2_button_action_shift",
+      "suite": "change_classification",
+      "description": "CTA wording changes user expectation from immediate purchase to a generic continuation step.",
+      "tags": ["change", "l2", "medium-risk", "cta"],
+      "input": {
+        "old_entry": {
+          "key": "app_paywall_button_buy_now",
+          "source_text": "Buy now"
+        },
+        "candidate_entry": {
+          "screen": "paywall",
+          "component": "primary_button",
+          "intent": "continue_purchase_flow",
+          "source_text": "Continue",
+          "background": "Primary CTA on the paywall right before payment confirmation.",
+          "risk_level": "medium",
+          "source_evidence": {
+            "extraction_mode": "snapshot-export",
+            "confidence": "high",
+            "verified_text": true
+          }
+        }
+      },
+      "expected": {
+        "change_level": "L2",
+        "reuse_decision": "review",
+        "review_decision": "human-gate",
+        "human_review_required": true,
+        "must_ask_for_context": false,
+        "reason_codes": ["action-shift", "l2-change"]
+      }
+    },
+    {
+      "case_id": "change_l3_pricing_meaning_shift",
+      "suite": "change_classification",
+      "description": "Pricing copy changed from tax-included to estimated pre-tax wording.",
+      "tags": ["change", "l3", "high-risk", "pricing"],
+      "input": {
+        "old_entry": {
+          "key": "app_checkout_note_price_includes_tax",
+          "source_text": "Price includes tax"
+        },
+        "candidate_entry": {
+          "screen": "checkout",
+          "component": "price_note",
+          "intent": "explain_pricing",
+          "source_text": "Estimated price before tax",
+          "background": "Price note shown next to the final amount on checkout.",
+          "risk_level": "high",
+          "source_evidence": {
+            "extraction_mode": "snapshot-export",
+            "confidence": "high",
+            "verified_text": true
+          }
+        }
+      },
+      "expected": {
+        "change_level": "L3",
+        "reuse_decision": "new-key",
+        "review_decision": "human-gate",
+        "human_review_required": true,
+        "must_ask_for_context": false,
+        "reason_codes": ["l3-meaning-shift", "high-risk"]
+      }
+    },
+    {
+      "case_id": "change_l2_display_name_field",
+      "suite": "change_classification",
+      "description": "Profile field label changes from Nickname to Display name.",
+      "tags": ["change", "l2", "profile", "field-label"],
+      "input": {
+        "old_entry": {
+          "key": "app_profile_field_nickname",
+          "source_text": "Nickname"
+        },
+        "candidate_entry": {
+          "screen": "profile_edit",
+          "component": "field_label",
+          "intent": "label_public_name_field",
+          "source_text": "Display name",
+          "background": "Label above the editable public name field on the profile edit page.",
+          "risk_level": "medium",
+          "source_evidence": {
+            "extraction_mode": "snapshot-export",
+            "confidence": "high",
+            "verified_text": true
+          }
+        }
+      },
+      "expected": {
+        "change_level": "L2",
+        "reuse_decision": "review",
+        "review_decision": "human-gate",
+        "human_review_required": true,
+        "must_ask_for_context": false,
+        "reason_codes": ["l2-change"]
+      }
+    },
+    {
+      "case_id": "reuse_exact_notifications_onboarding",
+      "suite": "reuse_decision",
+      "description": "Exact same source text, intent, and context already exist.",
+      "tags": ["reuse", "exact", "medium-risk"],
+      "input": {
+        "candidate_entry": {
+          "screen": "onboarding_permissions",
+          "component": "primary_button",
+          "intent": "request_notifications_permission",
+          "source_text": "Allow notifications",
+          "background": "Primary button that asks the user to enable push notifications in onboarding.",
+          "risk_level": "medium"
+        },
+        "existing_candidates": [
+          {
+            "key": "app_onboarding_button_allow_notifications",
+            "screen": "onboarding_permissions",
+            "component": "primary_button",
+            "intent": "request_notifications_permission",
+            "source_text": "Allow notifications",
+            "background": "Primary button that asks the user to enable push notifications in onboarding."
+          }
+        ]
+      },
+      "expected": {
+        "reuse_decision": "reuse",
+        "review_decision": "pass",
+        "human_review_required": false,
+        "must_ask_for_context": false,
+        "reason_codes": ["exact-context-match"]
+      }
+    },
+    {
+      "case_id": "reuse_same_text_different_scene_continue",
+      "suite": "reuse_decision",
+      "description": "The same short label exists, but it belongs to a different user flow and intent.",
+      "tags": ["reuse", "ambiguous-short-label", "scene-drift"],
+      "input": {
+        "candidate_entry": {
+          "screen": "payment_summary",
+          "component": "primary_button",
+          "intent": "confirm_payment_step",
+          "source_text": "Continue",
+          "background": "Primary button that moves from payment summary to payment authorization.",
+          "risk_level": "medium"
+        },
+        "existing_candidates": [
+          {
+            "key": "app_onboarding_button_continue",
+            "screen": "onboarding_step",
+            "component": "primary_button",
+            "intent": "advance_onboarding_step",
+            "source_text": "Continue",
+            "background": "Primary button on the onboarding stepper."
+          }
+        ]
+      },
+      "expected": {
+        "reuse_decision": "new-key",
+        "review_decision": "revise",
+        "human_review_required": false,
+        "must_ask_for_context": false,
+        "reason_codes": ["same-text-different-scene", "ambiguous-short-label"]
+      }
+    },
+    {
+      "case_id": "reuse_fuzzy_subscription_high_risk",
+      "suite": "reuse_decision",
+      "description": "A fuzzy high-risk pricing string should not auto-reuse approved legacy copy.",
+      "tags": ["reuse", "fuzzy", "high-risk", "pricing"],
+      "input": {
+        "candidate_entry": {
+          "screen": "subscription_checkout",
+          "component": "renewal_note",
+          "intent": "describe_subscription_renewal",
+          "source_text": "Your subscription renews monthly",
+          "background": "Renewal note shown below the subscription price before confirmation.",
+          "risk_level": "high",
+          "source_evidence": {
+            "extraction_mode": "snapshot-export",
+            "confidence": "high",
+            "verified_text": true
+          }
+        },
+        "existing_candidates": [
+          {
+            "key": "app_subscription_note_renews_every_month",
+            "screen": "subscription_checkout",
+            "component": "renewal_note",
+            "intent": "describe_subscription_renewal",
+            "source_text": "Subscription renews every month",
+            "background": "Renewal note shown below the subscription price before confirmation.",
+            "audit": {
+              "status": "approved",
+              "human_review_required": true
+            }
+          }
+        ]
+      },
+      "expected": {
+        "reuse_decision": "review",
+        "review_decision": "human-gate",
+        "human_review_required": true,
+        "must_ask_for_context": false,
+        "reason_codes": ["fuzzy-match", "reviewed-content-protection", "high-risk"]
+      }
+    },
+    {
+      "case_id": "reuse_missing_context_photos",
+      "suite": "reuse_decision",
+      "description": "An exact short label match exists, but the new request provides no scene context.",
+      "tags": ["reuse", "missing-context", "ambiguous-short-label"],
+      "input": {
+        "candidate_entry": {
+          "screen": "",
+          "component": "",
+          "intent": "",
+          "source_text": "Photos",
+          "background": "",
+          "risk_level": "low"
+        },
+        "existing_candidates": [
+          {
+            "key": "app_profile_tab_photos",
+            "screen": "profile",
+            "component": "tab_label",
+            "intent": "open_profile_photos_tab",
+            "source_text": "Photos",
+            "background": "Tab label in the profile page."
+          }
+        ]
+      },
+      "expected": {
+        "reuse_decision": "review",
+        "review_decision": "revise",
+        "human_review_required": false,
+        "must_ask_for_context": true,
+        "reason_codes": ["missing-context", "ambiguous-short-label"]
+      }
+    },
+    {
+      "case_id": "review_pass_low_risk_complete_context",
+      "suite": "review_gating",
+      "description": "A low-risk informational label with complete context and safe translations.",
+      "tags": ["review", "pass", "low-risk"],
+      "input": {
+        "candidate_entry": {
+          "key": "app_profile_label_member_since",
+          "screen": "profile",
+          "component": "meta_label",
+          "intent": "show_account_age",
+          "source_text": "Member since",
+          "background": "Label above the account creation date on the profile page.",
+          "risk_level": "low",
+          "source_evidence": {
+            "extraction_mode": "snapshot-export",
+            "confidence": "high",
+            "verified_text": true
+          },
+          "translations": {
+            "zh-Hans": {
+              "value": "加入时间"
+            },
+            "de": {
+              "value": "Mitglied seit"
+            }
+          }
+        }
+      },
+      "expected": {
+        "review_decision": "pass",
+        "human_review_required": false,
+        "must_ask_for_context": false,
+        "reason_codes": []
+      }
+    },
+    {
+      "case_id": "review_revise_placeholder_mismatch",
+      "suite": "review_gating",
+      "description": "The translated copy dropped a required placeholder.",
+      "tags": ["review", "revise", "placeholder"],
+      "input": {
+        "candidate_entry": {
+          "key": "app_gallery_banner_photos_left",
+          "screen": "gallery",
+          "component": "banner",
+          "intent": "inform_remaining_photos",
+          "source_text": "You have {count} photos left",
+          "background": "Banner shown near the top of the gallery when a daily upload quota applies.",
+          "risk_level": "low",
+          "message_format": "named-template",
+          "placeholders": [
+            {
+              "name": "count",
+              "canonical": "{count}",
+              "ios": "%1$ld",
+              "android": "%1$d",
+              "web": "{count}"
+            }
+          ],
+          "translations": {
+            "zh-Hans": {
+              "value": "你还剩照片"
+            }
+          }
+        }
+      },
+      "expected": {
+        "review_decision": "revise",
+        "human_review_required": false,
+        "must_ask_for_context": false,
+        "reason_codes": ["placeholder-mismatch"]
+      }
+    },
+    {
+      "case_id": "review_human_gate_trial_charge_notice",
+      "suite": "review_gating",
+      "description": "High-risk billing notice should always stay behind a human gate.",
+      "tags": ["review", "human-gate", "high-risk", "pricing"],
+      "input": {
+        "candidate_entry": {
+          "key": "app_subscription_note_trial_charge_notice",
+          "screen": "subscription_checkout",
+          "component": "renewal_note",
+          "intent": "disclose_post_trial_charge",
+          "source_text": "You will be charged after the trial ends",
+          "background": "Billing disclosure shown directly under the trial CTA in the subscription flow.",
+          "risk_level": "high",
+          "source_evidence": {
+            "extraction_mode": "snapshot-export",
+            "confidence": "high",
+            "verified_text": true
+          },
+          "translations": {
+            "zh-Hans": {
+              "value": "试用结束后将向你收费"
+            }
+          }
+        }
+      },
+      "expected": {
+        "review_decision": "human-gate",
+        "human_review_required": true,
+        "must_ask_for_context": false,
+        "reason_codes": ["high-risk"]
+      }
+    },
+    {
+      "case_id": "review_human_gate_identity_ocr_low_confidence",
+      "suite": "review_gating",
+      "description": "Identity-verification copy came from low-confidence OCR and should not auto-complete.",
+      "tags": ["review", "human-gate", "identity", "low-confidence-evidence"],
+      "input": {
+        "candidate_entry": {
+          "key": "app_identity_toast_face_verification_failed",
+          "screen": "identity_verification",
+          "component": "toast",
+          "intent": "inform_face_verification_failed",
+          "source_text": "Face verification failed. Try again.",
+          "background": "Toast shown after a failed selfie verification attempt.",
+          "risk_level": "high",
+          "source_evidence": {
+            "extraction_mode": "ocr",
+            "confidence": "low",
+            "verified_text": false
+          },
+          "translations": {
+            "zh-Hans": {
+              "value": "人脸验证失败，请重试"
+            }
+          }
+        }
+      },
+      "expected": {
+        "review_decision": "human-gate",
+        "human_review_required": true,
+        "must_ask_for_context": false,
+        "reason_codes": ["low-confidence-evidence", "identity-verification", "high-risk"]
+      }
+    },
+    {
+      "case_id": "review_revise_strict_length_toast",
+      "suite": "review_gating",
+      "description": "The translation breaks a strict toast length budget.",
+      "tags": ["review", "revise", "strict-length"],
+      "input": {
+        "candidate_entry": {
+          "key": "app_rewards_toast_daily_limit_reached",
+          "screen": "rewards",
+          "component": "toast",
+          "intent": "inform_daily_limit_reached",
+          "source_text": "Daily limit reached",
+          "background": "Toast shown when the user tries to claim a reward after the daily quota is gone.",
+          "risk_level": "medium",
+          "length_limit": {
+            "mode": "strict",
+            "max_chars": 18
+          },
+          "translations": {
+            "de": {
+              "value": "Das taegliche Limit wurde erreicht"
+            }
+          }
+        }
+      },
+      "expected": {
+        "review_decision": "revise",
+        "human_review_required": false,
+        "must_ask_for_context": false,
+        "reason_codes": ["strict-length"]
+      }
+    },
+    {
+      "case_id": "review_revise_missing_context_open",
+      "suite": "review_gating",
+      "description": "The label is too ambiguous to review safely without scene context.",
+      "tags": ["review", "revise", "missing-context", "ambiguous-short-label"],
+      "input": {
+        "candidate_entry": {
+          "key": "app_unknown_button_open",
+          "screen": "",
+          "component": "",
+          "intent": "",
+          "source_text": "Open",
+          "background": "",
+          "risk_level": "low",
+          "translations": {
+            "zh-Hans": {
+              "value": "打开"
+            }
+          }
+        }
+      },
+      "expected": {
+        "review_decision": "revise",
+        "human_review_required": false,
+        "must_ask_for_context": true,
+        "reason_codes": ["missing-context", "ambiguous-short-label"]
+      }
+    }
+  ]
+}
