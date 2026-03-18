@@ -9,6 +9,20 @@ This repo contains a reusable AI skill for localization workflows. It is built f
 - translate and review copy with AI
 - export ready-to-ship bundles for iOS, Android, Web, and CSV flows
 
+## Workflow At A Glance
+
+```mermaid
+flowchart LR
+    A["Raw inputs<br/>PRD / Word / PDF / XLSX / screenshots"] --> B["Ingest artifacts<br/>evidence.json"]
+    B --> C["Extract copy candidates<br/>copy-candidates.json"]
+    C --> D["Build canonical manifest<br/>manifest.json"]
+    D --> E["Key reuse / new key decisions"]
+    E --> F["Translate"]
+    F --> G["Review"]
+    G --> H["Deterministic QA"]
+    H --> I["Export bundles<br/>iOS / Android / Web / CSV"]
+```
+
 ## What It Handles
 
 - Raw PRD bundles: Markdown, Word, text-based PDF, XLSX, CSV, JSON
