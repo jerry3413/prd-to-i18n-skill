@@ -8,11 +8,12 @@ Use the coordinator protocol as the front door to the skill. The coordinator sho
 - assess readiness
 - ask only the smallest set of blocking questions
 - explain what can proceed now and what will be downgraded
+- route the request into document translation or localization delivery
 - route work to translator and reviewer only after the manifest slice is ready
 
 In user-facing conversation, keep the language plain. Infer internal modes and policies yourself instead of asking the user to choose between `basic`, `review`, `strict`, `inherit`, `template`, or `canonical` unless they explicitly ask.
 Treat `draft-only` and `release-ready` as internal terms. When talking to users, ask instead whether they want a simple draft copy list or a final package the team can use directly.
-If the user appears to want a full document translation, do not silently reinterpret that as localization delivery. Clarify the goal first.
+If the user appears to want a full document translation, do not silently reinterpret that as localization delivery. Clarify the goal first, then continue in the right branch.
 
 ## Why This Role Stays In The Foreground
 
@@ -22,20 +23,22 @@ Anthropic's latest guidance favors keeping clarification-heavy work in the main 
 
 1. Classify the request.
    Choose one:
+   - `document-translation`
    - `new-build`
    - `change-sync`
    - `dedupe`
    - `translation-fix`
    - `export-only`
-   - `out-of-scope document translation`, when the user appears to want the whole PRD, PDF, or spec translated as a document instead of extracting UI copy for localization
+   - `ambiguous prd/spec translation`, when the user says "translate my PRD", "翻译这个 PRD", or a similar request that could mean either whole-document translation or localization delivery
 2. Inventory the inputs already present.
    Track:
    - PRD
    - PDF attachments
    - screenshots or Figma export
-   - whether the request is `draft-only` or `delivery-intent`
+   - whether the request is `document-translation`, `draft-only`, or `delivery-intent`
    - runtime capability path: `text-first`, `native-vision`, `vision-extension`, `local-ocr`, or `manual-fallback`
    - target languages
+   - preferred document output shape when document translation is chosen
    - older localization files or export snapshot
    - delivery content type
    - file format or handoff format
@@ -61,12 +64,14 @@ Anthropic's latest guidance favors keeping clarification-heavy work in the main 
 
 Prefer the simplest interpretation first:
 
+- if the user says "翻译我的PRD", "translate this PRD", or something similarly ambiguous, first ask whether they want the whole document translated or whether they want the user-facing copy extracted for localization delivery
 - if the user gives a PRD or copy list, start from `new-build` or `change-sync`
 - if the user gives a key and one string, start from `translation-fix`
 - if the user gives a manifest or only asks for output files, start from `export-only`
 - if the user gives a folder of exported resources, accept the folder directly instead of asking them to enumerate file descriptors
-- if the user asks to translate the whole PRD, the whole PDF, or the whole spec, clarify whether they really want document translation or whether they want localization copy extraction
+- if the user asks to translate the whole PRD, the whole PDF, or the whole spec, keep the request in this skill and route it into document translation unless they switch to localization delivery
 - if the user gives a PRD, PDF, Word spec, or release document, do not jump straight into translation or full-text extraction; first confirm in plain language whether they want a draft copy table or a final developer-ready package
+- if the user confirms whole-document translation, ask what language they want; only ask about translated Markdown, bilingual output, or another final shape if that choice actually matters
 - after the user confirms the final delivery path, ask four user-facing questions:
   - what languages do you need
   - did you do this area before, and do you already have old localization files
@@ -88,7 +93,8 @@ When Claude Code project subagents are available, the main thread should still o
 ## What Counts As Blocking
 
 - no source text or PRD for a `new-build`
-- no confirmed scope yet when the request may actually be full-document translation rather than localization delivery
+- no confirmed scope yet when the request may be either full-document translation or localization delivery
+- no target language when the user asked for full-document translation
 - no confirmed goal yet when the request starts from raw PRD/PDF/Word materials and it is still unclear whether the user wants a draft copy table or a final delivery package
 - no target languages when the user asked for final delivery
 - no delivery content type when the user asked for final delivery
@@ -121,6 +127,7 @@ Prefer file or field requests over open-ended prompts. Instead of asking for “
 Good:
 
 - “你是要我翻整篇文档，还是只把里面需要做多语言的界面文案拎出来？这两个流程不一样。”
+- “你是想让我把整份 PRD 翻出来，还是只把里面要做多语言的界面文案整理出来？”
 - “你是要我先整理一版待翻译文案，还是直接给你一份可以交付的多语言包？”
 - “如果你要交付包，我还需要 4 个信息：要哪些语言、以前这块有没有做过多语言、有的话发旧文件、你要的是文案清单还是翻译表还是导入包、最后要什么文件格式。”
 - “如果你们以前做过这块多语言，把旧文件发我就行。我会顺手帮你避开重复建 key。没有也可以直接说没有。”
@@ -192,7 +199,7 @@ Please translate this PRD PDF into English.
 Coordinator response:
 
 ```xml
-<task_mode>out-of-scope document translation</task_mode>
+<task_mode>ambiguous prd/spec translation</task_mode>
 <ready_now>
 I can help, but I first need to confirm whether you want the whole document translated or whether you want the user-facing copy extracted for localization work.
 </ready_now>
@@ -210,7 +217,7 @@ I can help, but I first need to confirm whether you want the whole document tran
   </question>
 </questions>
 <next_step>
-After you confirm the scope, I will either leave this skill path or continue with the localization workflow.
+After you confirm the scope, I will either continue with document translation or continue with the localization workflow.
 </next_step>
 ```
 
@@ -297,6 +304,39 @@ User-facing version of the same follow-up should usually look like this:
 4. 你最后要什么文件：CSV、JSON、iOS、Android、Web，还是别的格式
 
 如果你们系统有固定模板，或者你想跟旧格式保持一致，再发我一份旧样本；没有就先按通用格式出。
+```
+
+### Example 1B
+
+User request:
+
+```text
+翻译我的PRD
+```
+
+Coordinator response:
+
+```xml
+<task_mode>ambiguous prd/spec translation</task_mode>
+<ready_now>
+I can continue, but I first need to know whether you want the whole PRD translated or whether you want only the UI copy prepared for localization work.
+</ready_now>
+<known_inputs>
+- raw PRD or spec input
+</known_inputs>
+<missing_required>
+- Confirm whether the task is document translation or localization delivery
+</missing_required>
+<questions>
+  <question id="scope">
+    <why>Those are two different jobs. If I guess wrong, I will do the wrong kind of work.</why>
+    <accepted_formats>Reply with either “整篇翻译” or “做多语言交付”.</accepted_formats>
+    <fallback>If you do not decide yet, I will stop after basic file preflight and will not start heavy extraction.</fallback>
+  </question>
+</questions>
+<next_step>
+After you confirm the scope, I will either ask for the target language and start document translation, or continue with the localization-delivery questions.
+</next_step>
 ```
 
 ### Example 2

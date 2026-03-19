@@ -64,16 +64,20 @@ Only skip these questions when one of the following is also true:
 - the older localization files, delivery content type, and file format are already present in the provided files
 - team defaults are already known in the workspace and are safe to apply
 
-## Non-Goal Rule
+## PRD Translation Routing Rule
 
-If the user asks for whole-document translation of a PRD, PDF, Confluence export, or spec, do not silently route that request into the localization-delivery pipeline.
+If the user asks to translate a PRD, PDF, Confluence export, or spec, do not assume they mean localization delivery.
 
 First confirm whether they want:
 
 1. whole-document translation
 2. extraction of user-facing copy for localization delivery
 
-Only continue with this skill if the user confirms the second path.
+Keep the request inside this skill either way:
+
+- if they choose whole-document translation, ask for the target language and continue in the document-translation branch
+- if they choose localization delivery, continue in the localization-delivery branch
+- if they do not choose yet, block before heavy extraction
 
 ## Key Strategy Rule
 
@@ -88,7 +92,9 @@ Infer key strategy in this order:
 
 | Situation | Action |
 | --- | --- |
-| request appears to be whole-document translation of a PRD/PDF/spec | block and clarify whether the user wants document translation or localization copy extraction |
+| request appears to be PRD/spec translation but the scope is still ambiguous | block and clarify whether the user wants whole-document translation or localization copy extraction |
+| document-translation request without target language | block and ask for the target language |
+| document-translation request with scope confirmed | continue with document translation and do not ask localization-only delivery questions |
 | raw-material request before the goal is confirmed | allow only lightweight preflight checks such as file type, page count, or whether text appears selectable; do not run full extraction, OCR, candidate building, or manifest generation yet |
 | `new-build` without older localization files and request is draft-only | continue, but skip high-confidence dedupe and reuse |
 | raw-material request where draft-only vs release-ready is still unclear | block and confirm the goal first |

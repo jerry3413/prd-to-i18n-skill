@@ -1,4 +1,4 @@
 interface:
   display_name: "I18n Delivery Pipeline"
-  short_description: "Raw PRD-to-i18n workflow orchestration"
-  default_prompt: "Use $i18n-delivery-pipeline to turn a raw PRD bundle, copy list, or export folder into a reviewed i18n manifest and delivery bundle."
+  short_description: "Route PRD translation and i18n delivery"
+  default_prompt: "Use $i18n-delivery-pipeline to decide whether this PRD or spec request needs full-document translation or a localization delivery package, then run that path."

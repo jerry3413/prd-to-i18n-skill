@@ -1,15 +1,20 @@
 ---
 name: i18n-delivery-pipeline
-description: "Orchestrate localization-delivery workflows for app, web, and backend teams. Use when Codex needs to turn raw product materials such as PRDs, Word files, PDFs, spreadsheets, screenshots, or Figma exports into UI-copy localization packages: extract candidate user-facing copy and context, normalize exported localization snapshots or API results, recommend key reuse versus new keys, classify changes and release risk, generate or review translations, and emit delivery bundles such as manifest JSON, CSV, iOS .strings, Android strings.xml, or Web/App JSON. Do not use this skill for full-document translation when the user wants the entire PRD or spec translated word-for-word."
+description: "Handle PRD, spec, and localization requests for app, web, and backend teams. Use when Codex needs to work from raw product materials such as PRDs, Confluence exports, Word files, PDFs, spreadsheets, screenshots, or Figma exports and must first determine whether the user wants full-document translation or a UI-copy localization package; then either translate the document or extract candidate user-facing copy, normalize exported localization snapshots or API results, recommend key reuse versus new keys, classify changes and release risk, generate or review translations, and emit delivery bundles such as manifest JSON, CSV, iOS .strings, Android strings.xml, or Web/App JSON."
 ---
 
 # I18n Delivery Pipeline
 
 ## Overview
 
-Turn fragmented localization inputs into one canonical i18n manifest and a release-ready delivery bundle. Treat API access as optional: the default operating mode is exported snapshot mode, with API mode as an adapter on top of the same workflow.
+Turn fragmented PRD and spec inputs into either a translated document or one canonical i18n manifest and a release-ready delivery bundle. Treat API access as optional: the default operating mode is exported snapshot mode, with API mode as an adapter on top of the same workflow.
 
-This skill is for localization delivery, not for translating whole PRDs or whole specification documents line by line. If the user actually wants a full document translation, stop and clarify that before entering the pipeline.
+This skill is the front door for ambiguous PRD and spec translation requests. First decide whether the user wants:
+
+- full-document translation
+- localization delivery from user-facing copy
+
+Use the document-translation path when the user wants the whole document translated. Use the localization path only when the user wants copy extraction, i18n packaging, or release handoff.
 
 ## Keep It Foolproof
 
@@ -19,12 +24,14 @@ Optimize for the simplest possible user interaction:
 - do not ask the user to choose internal modes or naming policies unless policy is the task
 - accept one export folder before asking for explicit file descriptors
 - ask for one blocking item at a time
-- when the request starts from a raw PRD, PDF, Word doc, or spec bundle, ask in plain language what outcome the user wants before any heavy extraction, OCR, or manifest work
-- if the user appears to want the entire PRD or PDF translated as a document, do not treat that as an i18n-delivery request until they confirm they actually want copy extraction or localization packaging
+- when the request starts from a raw PRD, PDF, Word doc, Confluence export, or spec bundle, ask in plain language what outcome the user wants before any heavy extraction, OCR, or manifest work
+- if the request sounds like "translate my PRD" or another ambiguous spec-translation ask, first decide whether the user wants the whole document translated or only the UI copy prepared for localization delivery
+- if the user wants the whole document translated, stay in this skill and run the document-translation path instead of forcing localization-only questions
 - explain practical consequences in plain language instead of leading with internal jargon
 
 User-facing defaults:
 
+- PRD/spec translation request -> clarify document translation vs localization delivery
 - PRD or copy list -> `new-build` or `change-sync`
 - key plus one string -> `translation-fix`
 - manifest or output request -> `export-only`
@@ -43,16 +50,21 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 
 1. Run readiness intake.
    Classify the request into one of:
+   - `document-translation`
    - `new-build`
    - `change-sync`
    - `dedupe`
    - `translation-fix`
    - `export-only`
    Ask only for missing blocking inputs.
-   If the user appears to want full-document translation, stop and clarify whether they want:
+   For raw PRD/PDF/Word/spec requests, first clarify whether the user wants:
    - full document translation
    - localization copy extraction and delivery
-   For raw PRD/PDF/Word requests, first ask in plain language whether the user wants:
+   If the user confirms full-document translation, collect:
+   - the target language
+   - the preferred output form only if the user cares about the final shape, for example translated Markdown, bilingual output, or a translated text file
+   Then translate the document from the highest-confidence text source and stop. Do not ask localization-only delivery questions such as old localization files, import package type, or app resource formats.
+   If the user confirms localization delivery, then ask in plain language whether they want:
    - a simple draft list of translatable copy
    - a final localization package that the team can import or hand to developers
    Only after the user confirms the final delivery path should you require:
@@ -173,7 +185,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 - Treat `L3` as new key plus deprecate or inactivate the old key.
 - Auto-escalate when placeholders are ambiguous, terminology conflicts, or length is strict.
 - If a raw-material request never confirmed whether the user wants a simple draft or a final delivery package, stop and clarify the goal before heavy extraction or before claiming final translation or delivery output.
-- If the user wants the whole PRD or whole PDF translated as a document, do not force that request into this pipeline. Clarify the task first.
+- If the user wants the whole PRD or whole PDF translated as a document, keep the work in this skill, ask for the target language, and stay out of the localization-delivery path.
 
 ## Use Large-Batch Tactics
 
