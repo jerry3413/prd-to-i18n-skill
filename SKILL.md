@@ -25,7 +25,7 @@ Optimize for the simplest possible user interaction:
 - accept one export folder before asking for explicit file descriptors
 - ask for one blocking item at a time
 - when the request starts from a raw PRD, PDF, Word doc, Confluence export, or spec bundle, ask in plain language what outcome the user wants before any heavy extraction, OCR, or manifest work
-- if the request sounds like "translate my PRD" or another ambiguous spec-translation ask, first decide whether the user wants the whole document translated or only the UI copy prepared for localization delivery
+- if the request sounds like "translate my PRD" or another ambiguous spec-translation ask, first ask the user which path they want; do not default to whole-document translation or localization delivery on their behalf
 - if the user wants the whole document translated, stay in this skill and run the document-translation path instead of forcing localization-only questions
 - explain practical consequences in plain language instead of leading with internal jargon
 - do not tell the user you need to "lock the goal", "start heavy processing", or other internal workflow phrases; just ask how they want you to handle the file

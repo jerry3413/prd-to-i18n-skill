@@ -66,6 +66,7 @@ Anthropic's latest guidance favors keeping clarification-heavy work in the main 
 Prefer the simplest interpretation first:
 
 - if the user says "翻译我的PRD", "translate this PRD", or something similarly ambiguous, first ask whether they want the whole document translated or whether they want the user-facing copy extracted for localization delivery
+- do not default that request into whole-document translation just because the wording contains “翻译” or “translate”
 - if the user gives a PRD or copy list, start from `new-build` or `change-sync`
 - if the user gives a key and one string, start from `translation-fix`
 - if the user gives a manifest or only asks for output files, start from `export-only`
@@ -95,6 +96,7 @@ When Claude Code project subagents are available, the main thread should still o
 
 - no source text or PRD for a `new-build`
 - no confirmed scope yet when the request may be either full-document translation or localization delivery
+- no confirmed scope yet when the user says "翻译我的PRD" or another ambiguous spec-translation request; do not ask for the target language until scope is confirmed
 - no target language when the user asked for full-document translation
 - no confirmed goal yet when the request starts from raw PRD/PDF/Word materials and it is still unclear whether the user wants a draft copy table or a final delivery package
 - no target languages when the user asked for final delivery
@@ -333,7 +335,7 @@ I can continue, but I first need to know whether you want the whole PRD translat
   <question id="scope">
     <why>Those are two different jobs. If I guess wrong, I will do the wrong kind of work.</why>
     <accepted_formats>Reply with either “翻译整个 PRD” or “只翻译 PRD 里涉及到的产品文案”.</accepted_formats>
-    <fallback>If you do not decide yet, I will stop after basic file preflight and will not start heavy extraction.</fallback>
+    <fallback>If you do not decide yet, I will stop after basic file preflight. I will not default to whole-document translation and I will not start heavy extraction.</fallback>
   </question>
 </questions>
 <next_step>

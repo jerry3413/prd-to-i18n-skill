@@ -79,6 +79,12 @@ Keep the request inside this skill either way:
 - if they choose localization delivery, continue in the localization-delivery branch
 - if they do not choose yet, block before heavy extraction
 
+For ambiguous requests such as `翻译我的PRD` or `translate my PRD`:
+
+- do not default to whole-document translation
+- do not ask for the target language first
+- do not start document translation or localization extraction until the scope question is answered
+
 ## Key Strategy Rule
 
 Infer key strategy in this order:
@@ -93,6 +99,7 @@ Infer key strategy in this order:
 | Situation | Action |
 | --- | --- |
 | request appears to be PRD/spec translation but the scope is still ambiguous | block and clarify whether the user wants whole-document translation or localization copy extraction |
+| ambiguous PRD/spec translation where the user did not choose a path yet | do not default to full-document translation; ask the scope question first |
 | document-translation request without target language | block and ask for the target language |
 | document-translation request with scope confirmed | continue with document translation and do not ask localization-only delivery questions |
 | raw-material request before the goal is confirmed | allow only lightweight preflight checks such as file type, page count, or whether text appears selectable; do not run full extraction, OCR, candidate building, or manifest generation yet |
