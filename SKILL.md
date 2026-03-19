@@ -29,6 +29,8 @@ Optimize for the simplest possible user interaction:
 - if the user wants the whole document translated, stay in this skill and run the document-translation path instead of forcing localization-only questions
 - explain practical consequences in plain language instead of leading with internal jargon
 - do not tell the user you need to "lock the goal", "start heavy processing", or other internal workflow phrases; just ask how they want you to handle the file
+- do not narrate internal extraction heuristics such as whether the file looks like paragraphs, tables, or screenshot notes; only tell the user whether you can extract directly or need a short cleanup pass first
+- if a draft copy result is small, show it directly in the conversation first; only create a file when the user asks for one or the result is large enough to need it
 
 User-facing defaults:
 
@@ -90,6 +92,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    Apply the source-priority rule from [references/decision-tables.md](references/decision-tables.md).
    Accept raw source bundles such as:
    - Markdown or text PRDs
+   - HTML or Confluence `.mhtml` exports
    - Word `.docx`
    - text-based PDFs
    - spreadsheets such as `.xlsx`, CSV, or JSON
@@ -116,7 +119,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    - `manual-fallback`
 5. Ingest raw PRD artifacts when the user does not already have a structured copy list.
    Read [references/artifact-ingestion.md](references/artifact-ingestion.md).
-   Run `scripts/ingest_artifacts.py` on mixed raw materials such as Word, Markdown, PDF, XLSX, CSV, JSON, or screenshots.
+   Run `scripts/ingest_artifacts.py` on mixed raw materials such as Word, Markdown, HTML, MHTML, PDF, XLSX, CSV, JSON, or screenshots.
    Preserve text blocks, image evidence, extraction confidence, and ordered structure in one evidence package.
 6. Extract copy candidates.
    Read [references/copy-extraction-rules.md](references/copy-extraction-rules.md).
@@ -174,7 +177,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    Run `scripts/emit_delivery_bundle.py` to generate manifest JSON, flat CSV, Web/App JSON, iOS `.strings`, and Android `strings.xml`.
    Keep canonical placeholders in the manifest and let exporters adapt them to platform-native formats.
    If the target languages, delivery content type, or file format are still unknown, do not emit delivery files and do not silently default to CSV, JSON, or any other format.
-   Stop at a candidate list or draft manifest only and say the delivery contract is not frozen yet.
+   Stop at a candidate list or draft manifest only and say the delivery contract is not settled yet. If that draft result is small, show it inline before creating any file.
    If the user needs a custom team format and no sample or template was provided, do not claim the output is final delivery-ready.
 
 ## Apply The Policy
@@ -187,6 +190,8 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 - Auto-escalate when placeholders are ambiguous, terminology conflicts, or length is strict.
 - If a raw-material request never confirmed whether the user wants a simple draft or a final delivery package, stop and clarify the goal before heavy extraction or before claiming final translation or delivery output.
 - If the user wants the whole PRD or whole PDF translated as a document, keep the work in this skill, ask for the target language, and stay out of the localization-delivery path.
+- If a raw material needs preprocessing before extraction, describe it as a short cleanup pass instead of exposing parser, table-shape, or DOM-structure details.
+- If a draft copy list is small and the user did not ask for a file, present it inline first and offer to save it only if they want to continue.
 
 ## Use Large-Batch Tactics
 

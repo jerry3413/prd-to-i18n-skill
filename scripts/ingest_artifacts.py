@@ -6,10 +6,14 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import quopri
 import re
 import subprocess
 import zipfile
 from datetime import datetime, timezone
+from email import policy
+from email.parser import BytesParser
+from html.parser import HTMLParser
 from pathlib import Path, PurePosixPath
 from typing import Any
 import xml.etree.ElementTree as ET
@@ -29,9 +33,9 @@ NS = {
     "a": A_NS,
 }
 
-TEXT_SUFFIXES = {".md", ".markdown", ".txt"}
+TEXT_SUFFIXES = {".md", ".markdown", ".txt", ".html", ".htm"}
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
-SUPPORTED_SUFFIXES = TEXT_SUFFIXES | IMAGE_SUFFIXES | {".csv", ".json", ".docx", ".doc", ".rtf", ".xlsx", ".pdf"}
+SUPPORTED_SUFFIXES = TEXT_SUFFIXES | IMAGE_SUFFIXES | {".csv", ".json", ".docx", ".doc", ".rtf", ".xlsx", ".pdf", ".mhtml"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -39,7 +43,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "inputs",
         nargs="*",
-        help="Files or directories containing PRD artifacts such as Markdown, Word, PDF, XLSX, CSV, JSON, or screenshots.",
+        help="Files or directories containing PRD artifacts such as Markdown, HTML, MHTML, Word, PDF, XLSX, CSV, JSON, or screenshots.",
     )
     parser.add_argument(
         "--input-dir",
@@ -109,7 +113,7 @@ def tokenize_filename(path: Path) -> list[str]:
 
 
 def source_confidence(kind: str) -> str:
-    if kind in {"markdown", "text", "csv", "json", "docx", "doc", "rtf", "xlsx"}:
+    if kind in {"markdown", "text", "html", "mhtml", "csv", "json", "docx", "doc", "rtf", "xlsx"}:
         return "high"
     if kind == "pdf":
         return "medium"
@@ -152,10 +156,119 @@ def build_text_block(
     return payload
 
 
-def parse_markdown_or_text(path: Path, artifact_id: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def decode_text_bytes(payload: bytes, preferred_charset: str | None = None) -> str:
+    charsets = [preferred_charset, "utf-8", "utf-8-sig", "gb18030", "gbk", "big5"]
+    for charset in charsets:
+        if not charset:
+            continue
+        try:
+            return payload.decode(charset)
+        except UnicodeDecodeError:
+            continue
+    return payload.decode("utf-8", errors="replace")
+
+
+class HTMLToMarkdownishParser(HTMLParser):
+    BLOCK_TAGS = {"p", "div", "section", "article", "blockquote", "pre"}
+    HEADING_TAGS = {"h1", "h2", "h3", "h4", "h5", "h6"}
+    SKIP_TAGS = {"script", "style", "noscript"}
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.skip_depth = 0
+        self.lines: list[str] = []
+        self.block_buffer: list[str] = []
+        self.list_prefix = ""
+        self.current_row: list[str] | None = None
+        self.current_cell: list[str] | None = None
+        self.current_row_is_header = False
+
+    def flush_block(self) -> None:
+        text = normalize_block_text(" ".join(self.block_buffer))
+        if text:
+            self.lines.append(f"{self.list_prefix}{text}".strip())
+        self.block_buffer = []
+        self.list_prefix = ""
+
+    def flush_row(self) -> None:
+        if self.current_row and any(cell.strip() for cell in self.current_row):
+            rendered = [cell if cell else " " for cell in self.current_row]
+            self.lines.append("| " + " | ".join(rendered) + " |")
+            if self.current_row_is_header:
+                self.lines.append("| " + " | ".join("---" for _ in rendered) + " |")
+        self.current_row = None
+        self.current_row_is_header = False
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag in self.SKIP_TAGS:
+            self.skip_depth += 1
+            return
+        if self.skip_depth:
+            return
+        attributes = dict(attrs)
+        if tag in self.BLOCK_TAGS or tag in self.HEADING_TAGS:
+            self.flush_block()
+        elif tag == "li":
+            self.flush_block()
+            self.list_prefix = "- "
+        elif tag == "br":
+            self.flush_block()
+        elif tag == "tr":
+            self.flush_block()
+            self.current_row = []
+            self.current_row_is_header = False
+        elif tag in {"td", "th"}:
+            self.current_cell = []
+            if tag == "th":
+                self.current_row_is_header = True
+        elif tag == "img":
+            self.flush_block()
+            alt = normalize_block_text(attributes.get("alt") or "image")
+            src = normalize_block_text(attributes.get("src") or "embedded-image")
+            self.lines.append(f"![{alt}]({src})")
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in self.SKIP_TAGS and self.skip_depth:
+            self.skip_depth -= 1
+            return
+        if self.skip_depth:
+            return
+        if tag in self.BLOCK_TAGS or tag in self.HEADING_TAGS or tag == "li":
+            self.flush_block()
+        elif tag in {"td", "th"} and self.current_row is not None and self.current_cell is not None:
+            self.current_row.append(normalize_block_text(" ".join(self.current_cell)))
+            self.current_cell = None
+        elif tag == "tr":
+            self.flush_row()
+
+    def handle_data(self, data: str) -> None:
+        if self.skip_depth:
+            return
+        text = normalize_block_text(data)
+        if not text:
+            return
+        if self.current_row is not None and self.current_cell is not None:
+            self.current_cell.append(text)
+        else:
+            self.block_buffer.append(text)
+
+    def render(self) -> str:
+        self.flush_block()
+        self.flush_row()
+        return "\n".join(self.lines) + ("\n" if self.lines else "")
+
+
+def html_like_to_markdownish(text: str) -> str:
+    parser = HTMLToMarkdownishParser()
+    parser.feed(text)
+    parser.close()
+    return parser.render()
+
+
+def parse_markdown_text(text: str, artifact_id: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     blocks: list[dict[str, Any]] = []
     images: list[dict[str, Any]] = []
-    lines = load_text(path).replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
     index = 0
     paragraph_buffer: list[str] = []
     paragraph_start = 0
@@ -166,14 +279,14 @@ def parse_markdown_or_text(path: Path, artifact_id: str) -> tuple[list[dict[str,
         nonlocal index, paragraph_buffer, paragraph_start
         if not paragraph_buffer:
             return
-        text = normalize_block_text(" ".join(paragraph_buffer))
-        if text:
+        paragraph_text = normalize_block_text(" ".join(paragraph_buffer))
+        if paragraph_text:
             blocks.append(
                 build_text_block(
                     artifact_id,
                     index,
                     "paragraph",
-                    text,
+                    paragraph_text,
                     location={"line_start": paragraph_start + 1},
                 )
             )
@@ -274,6 +387,39 @@ def parse_markdown_or_text(path: Path, artifact_id: str) -> tuple[list[dict[str,
     flush_paragraph()
     flush_table()
     return blocks, images
+
+
+def parse_markdown_or_text(path: Path, artifact_id: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    return parse_markdown_text(load_text(path), artifact_id)
+
+
+def parse_html_artifact(path: Path, artifact_id: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    html_text = decode_text_bytes(path.read_bytes())
+    return parse_markdown_text(html_like_to_markdownish(html_text), artifact_id)
+
+
+def parse_mhtml_artifact(path: Path, artifact_id: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+    msg = BytesParser(policy=policy.default).parsebytes(path.read_bytes())
+    html_payload: bytes | None = None
+    charset: str | None = None
+    notes: list[str] = []
+    for part in msg.walk():
+        if part.get_content_type() != "text/html":
+            continue
+        html_payload = part.get_payload(decode=True)
+        if html_payload is None:
+            raw_payload = part.get_payload()
+            if isinstance(raw_payload, str):
+                html_payload = quopri.decodestring(raw_payload.encode("utf-8", errors="ignore"))
+        charset = part.get_content_charset()
+        break
+    if not html_payload:
+        notes.append("no html part found in mhtml payload")
+        return [], [], notes
+    html_text = decode_text_bytes(html_payload, charset)
+    if "�" in html_text:
+        notes.append("html body contained replacement characters after decode")
+    return (*parse_markdown_text(html_like_to_markdownish(html_text), artifact_id), notes)
 
 
 def parse_markdown_table(lines: list[str]) -> list[dict[str, str]]:
@@ -689,6 +835,13 @@ def ingest_one(path: Path, artifact_index: int) -> dict[str, Any]:
     if suffix in {".md", ".markdown"}:
         kind = "markdown"
         blocks, images = parse_markdown_or_text(path, artifact_id)
+    elif suffix in {".html", ".htm"}:
+        kind = "html"
+        blocks, images = parse_html_artifact(path, artifact_id)
+    elif suffix == ".mhtml":
+        kind = "mhtml"
+        blocks, images, mhtml_notes = parse_mhtml_artifact(path, artifact_id)
+        notes.extend(mhtml_notes)
     elif suffix == ".txt":
         kind = "text"
         blocks, images = parse_markdown_or_text(path, artifact_id)

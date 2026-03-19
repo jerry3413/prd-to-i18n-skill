@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import quopri
 import subprocess
 import sys
 import tempfile
@@ -139,6 +140,45 @@ def create_minimal_xlsx(path: Path) -> None:
         archive.writestr("xl/worksheets/sheet1.xml", sheet_xml)
 
 
+def create_minimal_mhtml(path: Path) -> None:
+    html = """<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>Confluence Export</title>
+  </head>
+  <body>
+    <h1>PRD 4.0.2</h1>
+    <p>支持语言：zh-Hans, en, de</p>
+    <table>
+      <tr><th>页面</th><th>控件</th><th>文案</th><th>背景说明</th></tr>
+      <tr><td>seller_page</td><td>status_badge</td><td>已完成</td><td>任务完成状态标签</td></tr>
+    </table>
+  </body>
+</html>
+"""
+    payload = quopri.encodestring(html.encode("utf-8")).decode("ascii")
+    path.write_text(
+        "\n".join(
+            [
+                "From: <Saved by Codex>",
+                "Subject: Minimal Confluence Export",
+                "MIME-Version: 1.0",
+                'Content-Type: multipart/related; boundary="----=_NextPart_000_0000"',
+                "",
+                "------=_NextPart_000_0000",
+                'Content-Type: text/html; charset="utf-8"',
+                "Content-Transfer-Encoding: quoted-printable",
+                "",
+                payload,
+                "------=_NextPart_000_0000--",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
 def build_parallel_safe_manifest() -> dict[str, Any]:
     return {
         "manifest_version": "1.0",
@@ -250,6 +290,7 @@ def main() -> int:
         )
         create_minimal_docx(raw_bundle_dir / "sample.docx")
         create_minimal_xlsx(raw_bundle_dir / "sample.xlsx")
+        create_minimal_mhtml(raw_bundle_dir / "sample.mhtml")
 
         evidence_path = temp / "evidence.json"
         run_script(
@@ -259,7 +300,7 @@ def main() -> int:
             str(evidence_path),
         )
         evidence = load_json(evidence_path)
-        expect(evidence["summary"]["artifact_count"] == 3, "artifact ingestion should discover markdown, docx, and xlsx inputs")
+        expect(evidence["summary"]["artifact_count"] == 4, "artifact ingestion should discover markdown, docx, xlsx, and mhtml inputs")
         expect(evidence["summary"]["block_count"] >= 5, "artifact ingestion should extract structured text blocks from raw PRD artifacts")
 
         copy_candidates_path = temp / "copy-candidates.json"
@@ -274,6 +315,7 @@ def main() -> int:
         expect("Ad limit reached today" in extracted_texts, "markdown extraction should recover explicit toast copy")
         expect("Obverse Example" in extracted_texts, "docx extraction should recover table-based copy")
         expect("Open album" in extracted_texts, "xlsx extraction should recover worksheet row copy")
+        expect("已完成" in extracted_texts, "mhtml extraction should recover table-based copy from Confluence exports")
         expect(
             copy_candidates["suggested_target_locales"] == ["zh-Hans", "en", "de"],
             "copy extraction should preserve explicit target locale hints from the PRD",
@@ -434,7 +476,7 @@ def main() -> int:
         print(
             json.dumps(
                 {
-                    "checks": 13,
+                    "checks": 14,
                     "status": "passed",
                     "temp_dir": str(temp),
                 },

@@ -6,7 +6,7 @@ When multiple sources exist for the same string, choose source text in this orde
 
 1. structured copy list or approved source file
 2. exported localization snapshot for the source locale
-3. Markdown PRD, Word text, spreadsheet tables, or text-based PDF
+3. Markdown PRD, Word text, HTML/MHTML exports, spreadsheet tables, or text-based PDF
 4. Figma export or other structured design text
 5. user transcription
 6. screenshot or scanned OCR
@@ -55,7 +55,7 @@ When `delivery-intent` is true:
 1. ask for the target languages
 2. ask what kind of delivery content the user wants, such as a source-copy list, translation table, reviewer handoff, or import-ready package
 3. ask for the file format or handoff format that the team needs
-4. ask whether older localization files or exports already exist, because they help avoid duplicate keys
+4. ask whether this area was localized before; if yes, request the old files or exports because they help avoid duplicate keys
 5. if the user needs the output to match an existing internal system format, ask for a sample or template file
 
 Only skip these questions when one of the following is also true:
@@ -102,6 +102,7 @@ Infer key strategy in this order:
 | ambiguous PRD/spec translation where the user did not choose a path yet | do not default to full-document translation; ask the scope question first |
 | document-translation request without target language | block and ask for the target language |
 | document-translation request with scope confirmed | continue with document translation and do not ask localization-only delivery questions |
+| html or mhtml raw source is provided | ingest it directly as structured text; if cleanup is needed, describe it as a short cleanup pass rather than exposing DOM or parser details |
 | raw-material request before the goal is confirmed | allow only lightweight preflight checks such as file type, page count, or whether text appears selectable; do not run full extraction, OCR, candidate building, or manifest generation yet |
 | `new-build` without older localization files and request is draft-only | continue, but skip high-confidence dedupe and reuse |
 | raw-material request where draft-only vs release-ready is still unclear | block and confirm the goal first |
@@ -117,6 +118,13 @@ Infer key strategy in this order:
 | export requested without target outputs | ask for outputs before export |
 | release-intent request without target outputs or handoff standard | block and ask for target outputs before final translation/export work |
 | locale coverage unclear | ask for target locales, otherwise keep only the source locale final |
+
+## Draft Result Presentation Rule
+
+When the user asked for a draft copy list or draft translation output:
+
+- if the result set is small, show it directly in the conversation first
+- create a file only when the user asked for one, the result is too large for chat, or the next workflow step needs a saved artifact
 
 ## Human Gate Rule
 

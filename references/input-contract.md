@@ -8,7 +8,7 @@ Use one of these input profiles:
    Put exported resources in one folder and let the normalizer auto-detect them with `--input-dir`.
    This is the easiest path for non-technical users.
 2. `raw-artifact-bundle`
-   Provide a folder containing raw PRD materials such as Markdown, Word, text-based PDF, XLSX, CSV, JSON, screenshots, or Figma exports.
+   Provide a folder containing raw PRD materials such as Markdown, HTML, MHTML, Word, text-based PDF, XLSX, CSV, JSON, screenshots, or Figma exports.
    Use this when the team does not already have a copy list.
 3. `platform-only`
    Provide exported iOS `.strings`, Android `strings.xml`, Web/App JSON, or CSV catalogs.
@@ -42,7 +42,7 @@ The folder path should be the default recommendation before asking the user to b
 
 If the user starts from raw PRD materials instead of exported catalogs, prefer:
 
-1. put Markdown, Word, PDF, XLSX, CSV, JSON, and screenshots into one folder
+1. put Markdown, HTML, MHTML, Word, PDF, XLSX, CSV, JSON, and screenshots into one folder
 2. run:
 
    `python3 scripts/ingest_artifacts.py ./prd-bundle --output /tmp/evidence.json`
@@ -71,10 +71,12 @@ Do not ask localization-only delivery questions in that branch.
 If the user confirms the final delivery path, then ask:
 
 1. the target languages
-2. whether older localization files or exports already exist for this area
+2. whether this area was localized before, and if so ask for the old files or exports
 3. what kind of deliverable the user wants, such as a source-copy list, translation table, reviewer handoff, or import-ready package
 4. the final output format or handoff standard so the skill knows what the final delivery package must look like
 5. a sample or template only when the result must match an existing internal system format
+
+For draft copy-list work, if the result set is small and the user did not ask for a file, show the draft inline first. Only create a file by default when the result is large enough to be awkward in chat or when the next step depends on a saved artifact.
 
 ## Required Inputs By Task
 
@@ -223,6 +225,7 @@ For `release-ready`, collect:
 - target outputs or handoff standard
 
 If either is missing, do not silently invent a final delivery format. Stop at a draft manifest or CSV only after explaining the downgrade.
+If the downgraded draft result is small, prefer showing it inline first instead of silently creating a file.
 
 ## Ambiguous Context Rule
 

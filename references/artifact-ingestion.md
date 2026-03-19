@@ -7,6 +7,7 @@ Use artifact ingestion when the user has raw project materials instead of a read
 Prefer these as first-class inputs:
 
 - Markdown or plain text PRDs
+- HTML or Confluence `.mhtml` exports
 - Word `.docx`
 - text-extractable PDF
 - CSV or JSON tables
@@ -21,6 +22,8 @@ Accept these as supporting evidence:
 ## Ingestion Goal
 
 Convert mixed raw files into one `evidence.json` package before copy extraction.
+
+If the source is HTML or MHTML, extract the main page text inside the ingestion step. Do not rely on an ad hoc external conversion script as the normal path.
 
 The evidence package should preserve:
 
@@ -76,6 +79,8 @@ Ingestion should not:
 - decide key reuse
 - guess release risk from business intent alone
 - infer target locales unless they are explicitly written in the source material
+
+Keep internal structure diagnosis internal. It is fine to decide internally that a file needs a short cleanup pass before copy extraction, but user-facing replies should only say whether extraction can continue directly or needs a quick cleanup first.
 
 ## Practical Recommendation
 
