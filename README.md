@@ -129,8 +129,6 @@ This skill is a good fit if your team has any of these problems:
 
 不用先整理文案表，直接把 PRD、截图、PDF、表格扔进来，这套 skill 会帮你把散落的文案收成能交付的多语言包。
 
-现在这个仓库本身就是一个完整的 skill。也就是说，仓库根目录就是 skill 根目录，所以以后不管是 GitHub 安装还是手动下 zip，都会顺很多。
-
 ### 流程一览
 
 ```mermaid
