@@ -35,10 +35,13 @@ Anthropic's latest guidance favors keeping clarification-heavy work in the main 
    - screenshots or Figma export
    - whether the request is `draft-only` or `delivery-intent`
    - runtime capability path: `text-first`, `native-vision`, `vision-extension`, `local-ocr`, or `manual-fallback`
-   - localization snapshot or API result
+   - target languages
+   - older localization files or export snapshot
+   - delivery content type
+   - file format or handoff format
+   - sample or template for any custom team schema
    - context sidecar
    - glossary or brand rules
-   - target output formats
    - owners for high-risk copy
 3. Decide readiness.
    Mark each missing item as either:
@@ -64,7 +67,12 @@ Prefer the simplest interpretation first:
 - if the user gives a folder of exported resources, accept the folder directly instead of asking them to enumerate file descriptors
 - if the user asks to translate the whole PRD, the whole PDF, or the whole spec, clarify whether they really want document translation or whether they want localization copy extraction
 - if the user gives a PRD, PDF, Word spec, or release document, do not jump straight into translation or full-text extraction; first confirm in plain language whether they want a draft copy table or a final developer-ready package
-- after the user confirms the final delivery path, ask for the current localization baseline and the target outputs
+- after the user confirms the final delivery path, ask four user-facing questions:
+  - what languages do you need
+  - did you do this area before, and do you already have old localization files
+  - what kind of deliverable do you want: source-copy list, translation table, reviewer handoff, or import-ready package
+  - what file format do you need: CSV, JSON, iOS, Android, Web, or something custom
+- only ask for a sample or template when the user says the output must match an existing internal system or old import format
 
 When asking for data, prefer:
 
@@ -82,12 +90,13 @@ When Claude Code project subagents are available, the main thread should still o
 - no source text or PRD for a `new-build`
 - no confirmed scope yet when the request may actually be full-document translation rather than localization delivery
 - no confirmed goal yet when the request starts from raw PRD/PDF/Word materials and it is still unclear whether the user wants a draft copy table or a final delivery package
+- no target languages when the user asked for final delivery
+- no delivery content type when the user asked for final delivery
+- no file format when the user asked for final delivery
 - no current snapshot when the user asks for dedupe, reuse, or change sync
-- no current snapshot when the request is clearly release prep or handoff work and the user has not opted into draft-only mode
 - no business context for ambiguous or high-risk copy
 - no reliable text extraction for image-only or scanned high-risk content
-- no target output format when the user explicitly asks for delivery bundles
-- no target output format or handoff standard when the request is clearly release prep, handoff, import, or team delivery
+- no sample or template when the user explicitly needs the output to match an existing internal schema or import format
 - no owner when high-risk content must route to human approval
 
 PRD is not blocking for `translation-fix`, `dedupe`, or `export-only`.
@@ -97,6 +106,7 @@ PRD is not blocking for `translation-fix`, `dedupe`, or `export-only`.
 - missing screenshots for low-risk copy when the PRD and context are already clear
 - missing glossary for generic UI labels
 - missing sidecar when the user only wants basic mode normalization or export
+- missing older localization files for a new-build; continue, but be explicit that duplicate-key detection will be lower confidence
 
 ## Question Design Rules
 
@@ -110,11 +120,13 @@ Prefer file or field requests over open-ended prompts. Instead of asking for “
 
 Good:
 
-- “Do you want the whole document translated, or do you want me to pull out the user-facing copy and turn it into a localization package? Those are two different workflows.”
-- “Before I spend time pulling text out of this document, please tell me which result you want: 1. I first整理一版待翻译文案, or 2. I directly prepare a deliverable multi-language package for your team.”
-- “If you want the deliverable package, please also tell me three things: which languages you need, whether you already have existing localization files, and which final format you want.”
-- “If you already have localization files, send me the folder directly. iOS `.strings`, Android `strings.xml`, JSON, and CSV are all fine.”
-- “Please tell me the final format you want, for example CSV, iOS `.strings`, Android `strings.xml`, Web/App JSON, or all of them. Without that, I can only stop at a draft list.”
+- “你是要我翻整篇文档，还是只把里面需要做多语言的界面文案拎出来？这两个流程不一样。”
+- “你是要我先整理一版待翻译文案，还是直接给你一份可以交付的多语言包？”
+- “如果你要交付包，我还需要 4 个信息：要哪些语言、以前这块有没有做过多语言、有的话发旧文件、你要的是文案清单还是翻译表还是导入包、最后要什么文件格式。”
+- “如果你们以前做过这块多语言，把旧文件发我就行。我会顺手帮你避开重复建 key。没有也可以直接说没有。”
+- “你最后要的内容是什么：源文案清单、翻译表、审核表，还是开发可导入包？”
+- “你最后要什么文件：CSV、JSON、iOS `.strings`、Android `strings.xml`、Web JSON，还是别的格式？”
+- “如果你们系统有固定模板，或者你想跟旧格式保持一致，发我一份旧样本就行。没有的话我先按通用格式出。”
 - “For `app_identify_psy_photos`, please provide `screen`, `component`, and `background`. Without that, I will mark it `review-required`.”
 - “This PDF page appears to be scanned. Please provide a text export or confirm the copied sentence manually for the pricing section.”
 - “If your runtime has no built-in vision, tell me whether you have configured an external OCR/vision extension or only local OCR.”
@@ -147,12 +159,12 @@ PRD is present. Screenshots are missing but optional for this batch.
 <questions>
   <question id="goal">
     <why>I need to know whether you want a draft list of translatable copy first, or a final multi-language package your team can use directly.</why>
-    <accepted_formats>Reply with either “draft copy list” or “deliverable package”. If you want the deliverable package, also include the languages you need, any existing localization files, and the final format you want.</accepted_formats>
+    <accepted_formats>Reply with either “draft copy list” or “deliverable package”. If you want the deliverable package, also include the languages you need, what kind of deliverable you want, and the file format you need.</accepted_formats>
     <fallback>If you do not decide yet, I will stop before heavy extraction and will not pretend I can finish final delivery.</fallback>
   </question>
 </questions>
 <next_step>
-After you confirm the goal, I will either continue with draft extraction or ask for the baseline and output target needed for final delivery.
+After you confirm the goal, I will either continue with draft extraction or ask for the delivery details needed for final output.
 </next_step>
 ```
 
@@ -226,13 +238,13 @@ I can start from this PRD, but I should confirm the target outcome before doing 
 </missing_required>
 <questions>
   <question id="goal">
-    <why>I need to know whether you want me to first整理一版待翻译文案, or whether you want a final package your team can use directly. The final package path also needs your existing localization files, the languages you need, and the final format.</why>
-    <accepted_formats>Reply with either “draft copy list” or “deliverable package”. If you want the deliverable package, also send the languages you need, any existing iOS / Android / JSON / CSV localization files, and the final format you want.</accepted_formats>
+    <why>I need to know whether you want me to first整理一版待翻译文案, or whether you want a final package your team can use directly. The final package path also needs the languages, the kind of deliverable, and the file format.</why>
+    <accepted_formats>Reply with either “draft copy list” or “deliverable package”. If you want the deliverable package, also send the languages you need, what kind of deliverable you want, and the file format you need.</accepted_formats>
     <fallback>If you do not decide yet, I will stop before the heavier extraction steps instead of pretending I can finish the final delivery flow.</fallback>
   </question>
 </questions>
 <next_step>
-After you confirm the goal, I will either continue with draft extraction or ask for the baseline and output target needed for final delivery.
+After you confirm the goal, I will either continue with draft extraction or ask for the delivery details needed for final output.
 </next_step>
 ```
 
@@ -257,19 +269,34 @@ I can continue with the localization-delivery path.
 </known_inputs>
 <missing_required>
 - target languages
-- existing localization files
+- older localization files status
+- delivery content type
 - final output format
 </missing_required>
 <questions>
   <question id="delivery_inputs">
-    <why>These three items decide whether I can dedupe safely and what final package I should generate.</why>
-    <accepted_formats>Reply with: 1. the languages you need, 2. whether you already have iOS / Android / JSON / CSV localization files, 3. the final format you want such as CSV, manifest JSON, iOS, Android, Web JSON, or all of them.</accepted_formats>
-    <fallback>If you do not have existing localization files yet, say “no existing files” and I will continue in a lower-confidence path for dedupe and reuse.</fallback>
+    <why>I need these details before I can decide what to generate and how close it needs to be to your team's real handoff format.</why>
+    <accepted_formats>Reply with: 1. the languages you need, 2. whether you have older localization files for this area, 3. whether you want a source-copy list, translation table, reviewer handoff, or import-ready package, 4. the file format you want such as CSV, JSON, iOS, Android, Web JSON, or all of them, 5. an old sample if your team has a fixed template.</accepted_formats>
+    <fallback>If you do not have older files, say “no old files”. If you do not have a fixed template, say “no template, use the default format”. I can continue, but I will not pretend the result matches your internal schema exactly.</fallback>
   </question>
 </questions>
 <next_step>
-After I receive those three items, I will continue with extraction and package building.
+After I receive those delivery details, I will continue with extraction and package building.
 </next_step>
+```
+
+User-facing version of the same follow-up should usually look like this:
+
+```text
+好，我按“交付包”来做。
+
+还差 4 个信息，我拿到就继续：
+1. 要哪些语言
+2. 以前这块有没有做过多语言？有的话把旧文件发我；没有直接说没有
+3. 你要的内容是什么：源文案清单、翻译表、审核表，还是开发可导入包
+4. 你最后要什么文件：CSV、JSON、iOS、Android、Web，还是别的格式
+
+如果你们系统有固定模板，或者你想跟旧格式保持一致，再发我一份旧样本；没有就先按通用格式出。
 ```
 
 ### Example 2
@@ -361,7 +388,7 @@ I can help from the screenshot and PDF, but I should confirm the target outcome 
 <questions>
   <question id="goal">
     <why>I need to know whether you want me to first整理出待翻译文案, or whether you want a final package your team can use directly.</why>
-    <accepted_formats>Reply with either “draft copy list” or “final delivery package”. If you want the final package, also send the current localization export and the target output format.</accepted_formats>
+    <accepted_formats>Reply with either “draft copy list” or “final delivery package”. If you want the final package, also send the languages you need, what kind of deliverable you want, the file format you need, and any old sample if your team uses a fixed template.</accepted_formats>
     <fallback>If you do not decide yet, I will stop before the heavier extraction steps.</fallback>
   </question>
 </questions>

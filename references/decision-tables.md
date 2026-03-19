@@ -52,13 +52,16 @@ Treat `draft-only` and `release-ready` as internal labels. In user-facing conver
 
 When `delivery-intent` is true:
 
-1. ask for the current localization baseline so the workflow can do dedupe, reuse, and change-safe key decisions
-2. ask for the target outputs or handoff standard so the workflow knows what final package to emit
+1. ask for the target languages
+2. ask what kind of delivery content the user wants, such as a source-copy list, translation table, reviewer handoff, or import-ready package
+3. ask for the file format or handoff format that the team needs
+4. ask whether older localization files or exports already exist, because they help avoid duplicate keys
+5. if the user needs the output to match an existing internal system format, ask for a sample or template file
 
 Only skip these questions when one of the following is also true:
 
 - the user explicitly says `draft only`, `just translate`, `just extract copy`, or another phrase that clearly opts out of release-ready delivery
-- the baseline or output targets are already present in the provided files
+- the older localization files, delivery content type, and file format are already present in the provided files
 - team defaults are already known in the workspace and are safe to apply
 
 ## Non-Goal Rule
@@ -87,9 +90,14 @@ Infer key strategy in this order:
 | --- | --- |
 | request appears to be whole-document translation of a PRD/PDF/spec | block and clarify whether the user wants document translation or localization copy extraction |
 | raw-material request before the goal is confirmed | allow only lightweight preflight checks such as file type, page count, or whether text appears selectable; do not run full extraction, OCR, candidate building, or manifest generation yet |
-| `new-build` without snapshot and request is draft-only | continue, but skip high-confidence dedupe and reuse |
+| `new-build` without older localization files and request is draft-only | continue, but skip high-confidence dedupe and reuse |
 | raw-material request where draft-only vs release-ready is still unclear | block and confirm the goal first |
-| `new-build` without snapshot and request looks like release prep | block and ask for the current catalog or key baseline first |
+| final delivery request without target languages | block and ask for the target languages first |
+| final delivery request without delivery content type | block and ask whether the user wants a source-copy list, translation table, reviewer handoff, or import-ready package |
+| final delivery request without file format | block and ask for the file format or handoff format |
+| final delivery request that must match an internal system, but no sample/template was provided | block and ask for a sample or template |
+| final delivery request with missing delivery details | do not default to CSV, JSON, or any other output format |
+| `new-build` without older localization files and request looks like release prep | continue, but state that duplicate-key detection will be lower confidence |
 | `change-sync` or `dedupe` without snapshot | block and ask for the current catalog |
 | ambiguous short label without context | continue in downgraded mode and mark for human review |
 | medium/high-risk copy from OCR or vision only | require verified text before completion |

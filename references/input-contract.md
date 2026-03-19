@@ -64,8 +64,10 @@ Treat `draft-only` and `release-ready` as internal labels only. In user-facing c
 If the user confirms the final delivery path, then ask:
 
 1. the target languages
-2. the current localization files or export snapshot so the skill can dedupe and reuse safely
-3. the final output format or handoff standard so the skill knows what the final delivery package must look like
+2. whether older localization files or exports already exist for this area
+3. what kind of deliverable the user wants, such as a source-copy list, translation table, reviewer handoff, or import-ready package
+4. the final output format or handoff standard so the skill knows what the final delivery package must look like
+5. a sample or template only when the result must match an existing internal system format
 
 ## Required Inputs By Task
 
@@ -73,7 +75,7 @@ Do not treat PRD as globally mandatory. Match the requirement to the task:
 
 - `new-build`
   Require a PRD, a structured copy list, or another reliable source of new text.
-  If the request is a final delivery request rather than a simple draft, also require target languages, the current localization snapshot, plus target output formats or handoff standard.
+  If the request is a final delivery request rather than a simple draft, require target languages, delivery content type, and target output formats or handoff standard. Older localization files are strongly recommended but not mandatory.
 - `change-sync`
   Require changed source text such as a PRD diff, copy list, or updated source file, plus the current localization snapshot.
 - `dedupe`
@@ -107,7 +109,7 @@ At minimum, ask the team to export or provide:
 
 With only these fields, the skill can do basic duplicate checks, key suggestions, and bundle generation.
 
-Without a snapshot, do not present dedupe or reuse as high-confidence. For final delivery requests, ask for the baseline first unless the user explicitly accepts draft-style output.
+Without older localization files, do not present dedupe or reuse as high-confidence. For final delivery requests, ask whether the team has old files first, but continue if they say they do not.
 
 If the source comes from a screenshot or PDF instead of a snapshot, require at least:
 

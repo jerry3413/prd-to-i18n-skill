@@ -55,7 +55,13 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    For raw PRD/PDF/Word requests, first ask in plain language whether the user wants:
    - a simple draft list of translatable copy
    - a final localization package that the team can import or hand to developers
-   Only after the user confirms the final delivery path should you require the target languages, the current localization files or export snapshot, and the target outputs.
+   Only after the user confirms the final delivery path should you require:
+   - the target languages
+   - the delivery content type, such as a source-copy list, translation table, reviewer handoff, or import-ready package
+   - the file format or handoff format
+   - a sample or template, but only when the user needs the output to match an existing internal system format
+   Ask whether they already have older localization files or exports, but treat that as a dedupe aid rather than a default blocker.
+   After the user picks the final delivery path, do not continue into extraction or output generation until the required delivery details are answered.
    Before that question is answered, allow only lightweight preflight checks such as file type, page count, or whether the document appears to contain selectable text. Do not run full text extraction, OCR, copy-candidate extraction, or manifest building yet.
    The first substantive reply for raw materials must contain the goal-confirmation question before any suggestion that you are about to extract, translate, or generate output files.
    In user-facing replies, describe the task in plain language instead of requiring the user to know the mode name.
@@ -64,8 +70,10 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    For `translation-fix`, `dedupe`, and `export-only`, do not require a PRD when the task can be completed safely without it.
    If the user confirms the task is a final delivery request rather than a simple draft, also collect:
    - the target languages
-   - the current localization files or export snapshot for dedupe and reuse
+   - the delivery content type
    - the target outputs or handoff standard for final delivery
+   - any older localization files or export snapshot that can help avoid duplicate keys
+   - a sample or template file if the final package must match the team's existing schema
    Apply the source-priority rule from [references/decision-tables.md](references/decision-tables.md).
    Accept raw source bundles such as:
    - Markdown or text PRDs
@@ -152,7 +160,9 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 13. Emit delivery bundles.
    Run `scripts/emit_delivery_bundle.py` to generate manifest JSON, flat CSV, Web/App JSON, iOS `.strings`, and Android `strings.xml`.
    Keep canonical placeholders in the manifest and let exporters adapt them to platform-native formats.
-   If target outputs are still unknown, stop at a draft manifest or CSV and say the delivery contract is not frozen yet.
+   If the target languages, delivery content type, or file format are still unknown, do not emit delivery files and do not silently default to CSV, JSON, or any other format.
+   Stop at a candidate list or draft manifest only and say the delivery contract is not frozen yet.
+   If the user needs a custom team format and no sample or template was provided, do not claim the output is final delivery-ready.
 
 ## Apply The Policy
 
