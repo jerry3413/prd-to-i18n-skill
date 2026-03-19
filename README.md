@@ -4,7 +4,6 @@
 
 No need to clean up copy first. Feed the skill your PRDs, screenshots, PDFs, and spreadsheets, and it helps turn that mess into ready-to-ship i18n delivery bundles.
 
-This repository is now a single self-contained skill. The repo root is the skill root, so GitHub installs and zip downloads are much less confusing.
 
 ### Workflow At A Glance
 
