@@ -28,6 +28,7 @@ Optimize for the simplest possible user interaction:
 - if the request sounds like "translate my PRD" or another ambiguous spec-translation ask, first decide whether the user wants the whole document translated or only the UI copy prepared for localization delivery
 - if the user wants the whole document translated, stay in this skill and run the document-translation path instead of forcing localization-only questions
 - explain practical consequences in plain language instead of leading with internal jargon
+- do not tell the user you need to "lock the goal", "start heavy processing", or other internal workflow phrases; just ask how they want you to handle the file
 
 User-facing defaults:
 
@@ -62,7 +63,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    - localization copy extraction and delivery
    If the user confirms full-document translation, collect:
    - the target language
-   - the preferred output form only if the user cares about the final shape, for example translated Markdown, bilingual output, or a translated text file
+   - the preferred output form only if the user cares about the final shape; otherwise default to a complete translated version that follows the source structure
    Then translate the document from the highest-confidence text source and stop. Do not ask localization-only delivery questions such as old localization files, import package type, or app resource formats.
    If the user confirms localization delivery, then ask in plain language whether they want:
    - a simple draft list of translatable copy

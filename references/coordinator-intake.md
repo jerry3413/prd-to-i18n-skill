@@ -14,6 +14,7 @@ Use the coordinator protocol as the front door to the skill. The coordinator sho
 In user-facing conversation, keep the language plain. Infer internal modes and policies yourself instead of asking the user to choose between `basic`, `review`, `strict`, `inherit`, `template`, or `canonical` unless they explicitly ask.
 Treat `draft-only` and `release-ready` as internal terms. When talking to users, ask instead whether they want a simple draft copy list or a final package the team can use directly.
 If the user appears to want a full document translation, do not silently reinterpret that as localization delivery. Clarify the goal first, then continue in the right branch.
+Do not use internal workflow phrases such as “定死目标”, “重处理”, “重提取”, or “freeze the contract” in user-facing replies.
 
 ## Why This Role Stays In The Foreground
 
@@ -127,13 +128,14 @@ Prefer file or field requests over open-ended prompts. Instead of asking for “
 Good:
 
 - “你是要我翻整篇文档，还是只把里面需要做多语言的界面文案拎出来？这两个流程不一样。”
-- “你是想让我把整份 PRD 翻出来，还是只把里面要做多语言的界面文案整理出来？”
+- “你是想让我翻译整个 PRD，还是只翻译 PRD 里会出现在产品里的文案？”
 - “你是要我先整理一版待翻译文案，还是直接给你一份可以交付的多语言包？”
 - “如果你要交付包，我还需要 4 个信息：要哪些语言、以前这块有没有做过多语言、有的话发旧文件、你要的是文案清单还是翻译表还是导入包、最后要什么文件格式。”
 - “如果你们以前做过这块多语言，把旧文件发我就行。我会顺手帮你避开重复建 key。没有也可以直接说没有。”
 - “你最后要的内容是什么：源文案清单、翻译表、审核表，还是开发可导入包？”
 - “你最后要什么文件：CSV、JSON、iOS `.strings`、Android `strings.xml`、Web JSON，还是别的格式？”
 - “如果你们系统有固定模板，或者你想跟旧格式保持一致，发我一份旧样本就行。没有的话我先按通用格式出。”
+- “如果你是要翻译整个 PRD，直接告诉我要翻成什么语言就行。没有特别要求的话，我先按原结构给你一版完整译文。”
 - “For `app_identify_psy_photos`, please provide `screen`, `component`, and `background`. Without that, I will mark it `review-required`.”
 - “This PDF page appears to be scanned. Please provide a text export or confirm the copied sentence manually for the pricing section.”
 - “If your runtime has no built-in vision, tell me whether you have configured an external OCR/vision extension or only local OCR.”
@@ -166,7 +168,7 @@ PRD is present. Screenshots are missing but optional for this batch.
 <questions>
   <question id="goal">
     <why>I need to know whether you want a draft list of translatable copy first, or a final multi-language package your team can use directly.</why>
-    <accepted_formats>Reply with either “draft copy list” or “deliverable package”. If you want the deliverable package, also include the languages you need, what kind of deliverable you want, and the file format you need.</accepted_formats>
+    <accepted_formats>Reply with either “整理待翻译文案” or “直接做交付包”. If you want the delivery package, also include the languages you need, what kind of deliverable you want, and the file format you need.</accepted_formats>
     <fallback>If you do not decide yet, I will stop before heavy extraction and will not pretend I can finish final delivery.</fallback>
   </question>
 </questions>
@@ -212,7 +214,7 @@ I can help, but I first need to confirm whether you want the whole document tran
 <questions>
   <question id="scope">
     <why>Full document translation and localization delivery are different workflows. If I guess wrong, I will do the wrong kind of work.</why>
-    <accepted_formats>Reply with either “translate the whole document” or “extract the user-facing copy for localization”.</accepted_formats>
+    <accepted_formats>Reply with either “translate the whole PRD” or “translate only the product copy that appears in the app”.</accepted_formats>
     <fallback>If you do not decide yet, I will stop after basic file preflight and will not start extraction or output generation.</fallback>
   </question>
 </questions>
@@ -246,7 +248,7 @@ I can start from this PRD, but I should confirm the target outcome before doing 
 <questions>
   <question id="goal">
     <why>I need to know whether you want me to first整理一版待翻译文案, or whether you want a final package your team can use directly. The final package path also needs the languages, the kind of deliverable, and the file format.</why>
-    <accepted_formats>Reply with either “draft copy list” or “deliverable package”. If you want the deliverable package, also send the languages you need, what kind of deliverable you want, and the file format you need.</accepted_formats>
+    <accepted_formats>Reply with either “先整理待翻译文案” or “直接做交付包”. If you want the delivery package, also send the languages you need, what kind of deliverable you want, and the file format you need.</accepted_formats>
     <fallback>If you do not decide yet, I will stop before the heavier extraction steps instead of pretending I can finish the final delivery flow.</fallback>
   </question>
 </questions>
@@ -330,12 +332,12 @@ I can continue, but I first need to know whether you want the whole PRD translat
 <questions>
   <question id="scope">
     <why>Those are two different jobs. If I guess wrong, I will do the wrong kind of work.</why>
-    <accepted_formats>Reply with either “整篇翻译” or “做多语言交付”.</accepted_formats>
+    <accepted_formats>Reply with either “翻译整个 PRD” or “只翻译 PRD 里涉及到的产品文案”.</accepted_formats>
     <fallback>If you do not decide yet, I will stop after basic file preflight and will not start heavy extraction.</fallback>
   </question>
 </questions>
 <next_step>
-After you confirm the scope, I will either ask for the target language and start document translation, or continue with the localization-delivery questions.
+After you confirm the scope, I will either ask for the target language and give you a full translated version, or continue with the localization-delivery questions.
 </next_step>
 ```
 
@@ -428,7 +430,7 @@ I can help from the screenshot and PDF, but I should confirm the target outcome 
 <questions>
   <question id="goal">
     <why>I need to know whether you want me to first整理出待翻译文案, or whether you want a final package your team can use directly.</why>
-    <accepted_formats>Reply with either “draft copy list” or “final delivery package”. If you want the final package, also send the languages you need, what kind of deliverable you want, the file format you need, and any old sample if your team uses a fixed template.</accepted_formats>
+    <accepted_formats>Reply with either “先整理待翻译文案” or “直接做交付包”. If you want the final package, also send the languages you need, what kind of deliverable you want, the file format you need, and any old sample if your team uses a fixed template.</accepted_formats>
     <fallback>If you do not decide yet, I will stop before the heavier extraction steps.</fallback>
   </question>
 </questions>

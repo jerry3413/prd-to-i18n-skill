@@ -57,14 +57,14 @@ If the user starts from raw PRD materials instead of exported catalogs, prefer:
 
 For work that starts from raw materials, ask one thing early:
 
-1. whether the user wants the whole document translated, a simple draft copy list, or a final delivery package
+1. whether the user wants the whole document translated, a simple list of the copy that needs translation, or a final delivery package
 
 Treat `draft-only` and `release-ready` as internal labels only. In user-facing conversation, ask in plain language instead of exposing those labels directly.
 
 If the user confirms whole-document translation, ask for:
 
 1. the target language
-2. the preferred output form only if the user cares about the final shape, such as translated Markdown or bilingual output
+2. the preferred output form only if the user cares about the final shape; otherwise default to a complete translated version that follows the source structure
 
 Do not ask localization-only delivery questions in that branch.
 
@@ -215,7 +215,7 @@ Use this split:
 - `release-ready`
   The user is preparing localization for handoff, import, delivery, or release.
 
-These labels are for internal reasoning. When talking to users, ask in plain language whether they want a draft copy list first or a final package the team can use directly.
+These labels are for internal reasoning. When talking to users, ask in plain language whether they want a simple list of the copy that needs translation first or a final package the team can use directly.
 
 For `release-ready`, collect:
 
