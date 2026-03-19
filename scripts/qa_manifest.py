@@ -285,6 +285,7 @@ def main() -> int:
         return 1
 
     seen_keys: Counter[str] = Counter()
+    included_surfaces = set(parse_string_list(manifest.get("included_surfaces")))
     for entry in entries:
         if isinstance(entry, dict):
             key = str(entry.get("key") or "")
@@ -297,6 +298,15 @@ def main() -> int:
 
     for entry in entries:
         if isinstance(entry, dict):
+            if included_surfaces:
+                entry_surface = str(entry.get("surface") or "").strip()
+                if entry_surface and entry_surface not in included_surfaces:
+                    add_issue(
+                        issues,
+                        "error",
+                        str(entry.get("key") or "<missing>"),
+                        f"entry surface {entry_surface} is outside included_surfaces",
+                    )
             validate_entry(entry, manifest, issues)
         else:
             add_issue(issues, "error", "<unknown>", "entry is not an object")

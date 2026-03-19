@@ -71,11 +71,13 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    - a simple draft list of translatable copy
    - a final localization package that the team can import or hand to developers
    Only after the user confirms the final delivery path should you require:
+   - which product surfaces are in scope when the PRD mixes more than one surface, such as app, web, seller, backend-admin, or other internal tools
    - the target languages
    - the delivery content type, such as a source-copy list, translation table, reviewer handoff, or import-ready package
    - the file format or handoff format
    - a sample or template, but only when the user needs the output to match an existing internal system format
    Ask whether they already have older localization files or exports, but treat that as a dedupe aid rather than a default blocker.
+   If the PRD clearly mixes more than one product surface, do not guess which ones belong to this release. Ask the user which surfaces this delivery should cover before you freeze the manifest or create keys.
    After the user picks the final delivery path, do not continue into extraction or output generation until the required delivery details are answered.
    Before that question is answered, allow only lightweight preflight checks such as file type, page count, or whether the document appears to contain selectable text. Do not run full text extraction, OCR, copy-candidate extraction, or manifest building yet.
    The first substantive reply for raw materials must contain the goal-confirmation question before any suggestion that you are about to extract, translate, or generate output files.
@@ -137,6 +139,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    Use [references/manifest-schema.md](references/manifest-schema.md) as the source of truth.
    Fill or preserve these fields for every candidate entry:
    - `screen`
+   - `surface`
    - `component`
    - `source_text`
    - `intent`
@@ -192,6 +195,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 - If the user wants the whole PRD or whole PDF translated as a document, keep the work in this skill, ask for the target language, and stay out of the localization-delivery path.
 - If a raw material needs preprocessing before extraction, describe it as a short cleanup pass instead of exposing parser, table-shape, or DOM-structure details.
 - If a draft copy list is small and the user did not ask for a file, present it inline first and offer to save it only if they want to continue.
+- If the source material mixes multiple surfaces and the user has not confirmed which ones belong to this delivery, stop and ask before final translation, key creation, or export.
 
 ## Use Large-Batch Tactics
 

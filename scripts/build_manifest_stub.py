@@ -43,6 +43,10 @@ def parse_args() -> argparse.Namespace:
         help="Comma-separated output formats. Default: manifest,csv,json,ios,android",
     )
     parser.add_argument(
+        "--included-surfaces",
+        help="Optional comma-separated list of surfaces included in this delivery, such as app,web,seller,backend-admin.",
+    )
+    parser.add_argument(
         "--required-locale-coverage",
         help="Optional comma-separated locale list that must be populated before export. Defaults to target-locales.",
     )
@@ -62,12 +66,33 @@ def parse_args() -> argparse.Namespace:
 
 
 def parse_list(value: str) -> list[str]:
+    if value is None:
+        return []
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
 def slugify(value: str, fallback: str) -> str:
     normalized = re.sub(r"[^a-zA-Z0-9]+", "_", value.strip().lower()).strip("_")
     return normalized or fallback
+
+
+def canonicalize_surface(value: str) -> str:
+    lowered = str(value or "").strip().lower()
+    if not lowered:
+        return ""
+    if any(token in lowered for token in ["frontend", "front-end", "front_end", "前端", "app", "mobile", "client", "ios", "android", "用户端"]):
+        return "app"
+    if any(token in lowered for token in ["web", "h5", "site", "pc"]):
+        return "web"
+    if any(token in lowered for token in ["seller", "merchant", "商家"]):
+        return "seller"
+    if any(token in lowered for token in ["backend", "backoffice", "back-office", "admin", "后台", "运营", "cms", "ops", "operation"]):
+        return "backend-admin"
+    if any(token in lowered for token in ["support", "客服"]):
+        return "support"
+    if any(token in lowered for token in ["internal", "内部", "tool", "工具"]):
+        return "internal-tool"
+    return slugify(lowered, "unknown_surface")
 
 
 def source_locale_from_payload(payload: dict[str, Any]) -> str:
@@ -216,6 +241,23 @@ def build_manifest(args: argparse.Namespace) -> dict[str, Any]:
     required_locale_coverage = parse_list(args.required_locale_coverage) if args.required_locale_coverage else list(target_locales)
     key_mode = infer_key_mode(raw_entries, args.key_mode)
     target_outputs = ensure_platform_outputs(parse_list(args.target_outputs))
+    detected_surfaces = [
+        surface
+        for surface in dict.fromkeys(
+            canonicalize_surface(entry.get("surface"))
+            for entry in raw_entries
+            if isinstance(entry, dict) and canonicalize_surface(entry.get("surface"))
+        )
+        if surface
+    ]
+    inherited_included = parse_list(source_payload.get("included_surfaces")) if isinstance(source_payload, dict) else []
+    included_surfaces = [
+        canonicalize_surface(surface)
+        for surface in (parse_list(args.included_surfaces) if args.included_surfaces else inherited_included)
+        if canonicalize_surface(surface)
+    ]
+    if not included_surfaces:
+        included_surfaces = list(detected_surfaces)
 
     entries: list[dict[str, Any]] = []
     seen_keys: set[str] = set()
@@ -228,6 +270,10 @@ def build_manifest(args: argparse.Namespace) -> dict[str, Any]:
             continue
 
         entry = dict(raw_entry)
+        entry_surface = canonicalize_surface(entry.get("surface") or args.surface)
+        entry["surface"] = entry_surface
+        if included_surfaces and entry_surface and entry_surface not in included_surfaces:
+            continue
         entry.setdefault("source_evidence", {"extraction_mode": "user-transcribed", "confidence": "medium", "verified_text": True, "artifacts": []})
         entry.setdefault("existing_match", {"status": "none", "matched_key": None, "confidence": 0.0})
         entry["change_level"] = infer_change_level(entry, args.task_mode)
@@ -284,6 +330,7 @@ def build_manifest(args: argparse.Namespace) -> dict[str, Any]:
         "target_locales": target_locales,
         "required_locale_coverage": required_locale_coverage,
         "target_outputs": target_outputs,
+        "included_surfaces": included_surfaces,
         "max_entries_per_slice": max(1, args.max_entries_per_slice),
         "revision_loop_limit": max(1, args.revision_loop_limit),
         "entries": entries,

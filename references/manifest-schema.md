@@ -11,6 +11,7 @@ Use one canonical JSON document as the system of record:
   "key_mode": "inherit",
   "task_mode": "new-build",
   "generated_at": "2026-03-17T00:00:00Z",
+  "included_surfaces": ["app"],
   "target_locales": ["en", "zh-Hans", "de"],
   "required_locale_coverage": ["en", "zh-Hans", "de"],
   "target_outputs": ["manifest", "csv", "json", "ios", "android"],
@@ -20,6 +21,7 @@ Use one canonical JSON document as the system of record:
     {
       "key": "app_rewarded_ad_toast_daily_limit_reached",
       "key_candidate": "app_rewarded_ad_toast_daily_limit_reached",
+      "surface": "app",
       "screen": "rewarded_ad",
       "component": "toast",
       "intent": "inform_daily_ad_limit_reached",
@@ -74,6 +76,7 @@ Use one canonical JSON document as the system of record:
 
 - `key`
 - `source_text`
+- `surface`
 - `screen`
 - `component`
 - `intent`
@@ -87,6 +90,7 @@ Use one canonical JSON document as the system of record:
 - `source_locale`
 - `key_mode`
 - `generated_at`
+- `included_surfaces`
 - `target_locales`
 - `required_locale_coverage`
 - `target_outputs`
@@ -143,6 +147,7 @@ All exporters should read from the same manifest rather than re-deriving content
 
 Use `target_outputs` to declare which artifacts must be generated from this manifest.
 Use `required_locale_coverage` to declare which locales must be populated before final export.
+Use `included_surfaces` to declare which product surfaces are in scope for this delivery, for example `app`, `web`, `seller`, or `backend-admin`.
 
 ## Evidence And Placeholder Rules
 

@@ -70,6 +70,7 @@ Do not ask localization-only delivery questions in that branch.
 
 If the user confirms the final delivery path, then ask:
 
+1. which product surfaces this delivery should cover, but only when the source clearly mixes more than one surface
 1. the target languages
 2. whether this area was localized before, and if so ask for the old files or exports
 3. what kind of deliverable the user wants, such as a source-copy list, translation table, reviewer handoff, or import-ready package
@@ -158,6 +159,7 @@ Use a CSV or JSON sidecar with these columns when the export does not contain co
 
 - `key`
 - `source_text`
+- `surface`
 - `screen`
 - `component`
 - `intent`

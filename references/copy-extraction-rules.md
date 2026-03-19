@@ -9,6 +9,7 @@ Produce conservative `copy-candidates.json` entries that are safe enough to beco
 Every candidate should aim to include:
 
 - `source_text`
+- `surface`
 - `screen`
 - `component`
 - `intent`
@@ -65,6 +66,8 @@ Recover `screen`, `component`, and `background` in this order:
 2. nearby label-value context
 3. surrounding headings
 4. attached or nearby image evidence
+
+Recover `surface` from explicit row fields or stable headings whenever the source clearly mixes more than one product surface, such as app, web, seller, admin, or internal-tool content. Do not silently assume that all extracted copy belongs to the same surface when the PRD clearly mixes them.
 
 If context is still weak:
 

@@ -37,6 +37,7 @@ SCREEN_LABEL_PATTERNS = ["页面", "screen", "page", "route", "tab", "弹窗", "
 BACKGROUND_LABEL_PATTERNS = ["背景", "场景", "说明", "context", "description", "when", "触发", "shown when"]
 INTENT_LABEL_PATTERNS = ["意图", "intent", "purpose", "action"]
 COMPONENT_LABEL_PATTERNS = ["组件", "控件", "component", "type", "类型"]
+SURFACE_LABEL_PATTERNS = ["surface", "模块", "module", "平台", "端", "角色", "系统", "audience"]
 TARGET_LOCALE_LABEL_PATTERNS = ["目标语种", "支持语言", "发布语种", "多语言范围", "target locales", "languages"]
 TARGET_OUTPUT_LABEL_PATTERNS = ["目标端", "交付端", "输出格式", "target outputs", "platforms", "delivery formats"]
 
@@ -44,6 +45,7 @@ FIELD_ALIASES = {
     "key": ["key", "name", "string_name"],
     "source_text": ["source_text", "source", "original_text", "english", "en", "原文", "文案", "copy", "展示文案"],
     "screen": ["screen", "page", "route", "页面", "tab"],
+    "surface": ["surface", "module", "模块", "平台", "端", "角色", "系统"],
     "component": ["component", "ui_component", "控件", "组件", "类型"],
     "intent": ["intent", "purpose", "文案意图", "意图"],
     "background": ["background", "context", "description", "scene", "背景说明", "场景", "说明"],
@@ -169,6 +171,11 @@ def looks_component_label(label: str) -> bool:
     return any(token in lowered for token in COMPONENT_LABEL_PATTERNS)
 
 
+def looks_surface_label(label: str) -> bool:
+    lowered = label.strip().lower()
+    return any(token in lowered for token in SURFACE_LABEL_PATTERNS)
+
+
 def looks_target_locale_label(label: str) -> bool:
     lowered = label.strip().lower()
     return any(token in lowered for token in TARGET_LOCALE_LABEL_PATTERNS)
@@ -200,6 +207,25 @@ def infer_component(label: str, heading_hint: str = "") -> str:
     if "label" in lowered:
         return "label"
     return ""
+
+
+def canonicalize_surface(value: str, allow_fallback: bool = True) -> str:
+    lowered = normalize_text(value).lower()
+    if not lowered:
+        return ""
+    if any(token in lowered for token in ["frontend", "front-end", "front_end", "前端", "app", "mobile", "client", "ios", "android", "用户端"]):
+        return "app"
+    if any(token in lowered for token in ["web", "h5", "site", "pc"]):
+        return "web"
+    if any(token in lowered for token in ["seller", "merchant", "商家"]):
+        return "seller"
+    if any(token in lowered for token in ["backend", "backoffice", "back-office", "admin", "后台", "运营", "cms", "ops", "operation"]):
+        return "backend-admin"
+    if any(token in lowered for token in ["support", "客服"]):
+        return "support"
+    if any(token in lowered for token in ["internal", "内部", "tool", "工具"]):
+        return "internal-tool"
+    return slugify(lowered) if allow_fallback else ""
 
 
 def parse_length_limit(raw: str) -> dict[str, Any] | None:
@@ -258,6 +284,14 @@ def pick_screen_from_headings(headings: list[str]) -> str:
     return ""
 
 
+def pick_surface_from_headings(headings: list[str]) -> str:
+    for heading in reversed(headings):
+        surface = canonicalize_surface(heading, allow_fallback=False)
+        if surface:
+            return surface
+    return ""
+
+
 def looks_visible_copy(text: str) -> bool:
     value = normalize_text(text)
     if not value or len(value) > 140:
@@ -293,8 +327,9 @@ def evidence_from_block(artifact: dict[str, Any], block: dict[str, Any]) -> dict
     return payload
 
 
-def candidate_key(entry: dict[str, Any]) -> tuple[str, str, str, str]:
+def candidate_key(entry: dict[str, Any]) -> tuple[str, str, str, str, str]:
     return (
+        normalize_text(entry.get("surface")).lower(),
         normalize_text(entry.get("source_text")).lower(),
         normalize_text(entry.get("screen")).lower(),
         normalize_text(entry.get("component")).lower(),
@@ -328,9 +363,11 @@ def build_candidate(
     background = context.get("background", "")
     intent = context.get("intent", "")
     screen = context.get("screen", "")
+    surface = canonicalize_surface(context.get("surface", ""))
     image_refs = block.get("image_refs") or []
     payload: dict[str, Any] = {
         "source_text": normalize_text(source_text),
+        "surface": surface,
         "screen": screen,
         "component": component,
         "intent": intent,
@@ -344,7 +381,9 @@ def build_candidate(
 
 def update_context_from_label(context: dict[str, str], label: str, value: str) -> None:
     clean = normalize_text(value)
-    if looks_screen_label(label):
+    if looks_surface_label(label):
+        context["surface"] = canonicalize_surface(clean)
+    elif looks_screen_label(label):
         context["screen"] = clean
     elif looks_background_label(label):
         context["background"] = clean
@@ -370,6 +409,7 @@ def infer_structured_candidate(block: dict[str, Any], artifact: dict[str, Any], 
         return None
 
     screen = field_lookup(fields, "screen") or context.get("screen", "")
+    surface = canonicalize_surface(field_lookup(fields, "surface") or context.get("surface", ""))
     component = field_lookup(fields, "component") or infer_component(header_hint or block.get("type", ""), context.get("heading_hint", ""))
     intent = field_lookup(fields, "intent") or context.get("intent", "")
     background = field_lookup(fields, "background") or context.get("background", "")
@@ -378,6 +418,7 @@ def infer_structured_candidate(block: dict[str, Any], artifact: dict[str, Any], 
         artifact,
         block,
         {
+            "surface": surface,
             "screen": screen,
             "component": component,
             "intent": intent,
@@ -446,6 +487,7 @@ def infer_candidate_from_text(
                     artifact,
                     block,
                     {
+                        "surface": context.get("surface", ""),
                         "screen": context.get("screen", ""),
                         "component": component,
                         "intent": context.get("intent", ""),
@@ -467,6 +509,7 @@ def infer_candidate_from_text(
                     artifact,
                     block,
                     {
+                        "surface": context.get("surface", ""),
                         "screen": context.get("screen", ""),
                         "component": context.get("component") or infer_component(text, context.get("heading_hint", "")),
                         "intent": context.get("intent", ""),
@@ -481,13 +524,14 @@ def infer_candidate_from_text(
 
     if block.get("type") == "list-item" and looks_heading_copy_related(context.get("heading_hint", "")) and looks_visible_copy(text):
         entries.append(
-            build_candidate(
-                text,
-                artifact,
-                block,
-                {
-                    "screen": context.get("screen", ""),
-                    "component": context.get("component") or infer_component(context.get("heading_hint", ""), ""),
+                build_candidate(
+                    text,
+                    artifact,
+                    block,
+                    {
+                        "surface": context.get("surface", ""),
+                        "screen": context.get("screen", ""),
+                        "component": context.get("component") or infer_component(context.get("heading_hint", ""), ""),
                     "intent": context.get("intent", ""),
                     "background": context.get("background", ""),
                     "heading_hint": context.get("heading_hint", ""),
@@ -501,7 +545,7 @@ def infer_candidate_from_text(
 def extract_from_artifact(artifact: dict[str, Any]) -> tuple[list[dict[str, Any]], list[str], list[str]]:
     blocks = sorted(artifact.get("blocks", []), key=lambda block: str(block.get("block_id")))
     heading_stack: list[str] = []
-    context = {"screen": "", "component": "", "intent": "", "background": "", "heading_hint": ""}
+    context = {"surface": "", "screen": "", "component": "", "intent": "", "background": "", "heading_hint": ""}
     entries: list[dict[str, Any]] = []
     suggested_locales: list[str] = []
     suggested_outputs: list[str] = []
@@ -513,6 +557,9 @@ def extract_from_artifact(artifact: dict[str, Any]) -> tuple[list[dict[str, Any]
             heading_stack = heading_stack[: max(level - 1, 0)]
             heading_stack.append(heading_text)
             context["heading_hint"] = heading_text
+            surface_hint = pick_surface_from_headings(heading_stack)
+            if surface_hint:
+                context["surface"] = surface_hint
             if not context.get("screen"):
                 screen_hint = pick_screen_from_headings(heading_stack)
                 if screen_hint:
@@ -525,6 +572,9 @@ def extract_from_artifact(artifact: dict[str, Any]) -> tuple[list[dict[str, Any]
             continue
 
         context["heading_hint"] = heading_stack[-1] if heading_stack else ""
+        surface_hint = pick_surface_from_headings(heading_stack)
+        if surface_hint:
+            context["surface"] = surface_hint
         if not context.get("screen"):
             screen_hint = pick_screen_from_headings(heading_stack)
             if screen_hint:
@@ -555,10 +605,16 @@ def main() -> int:
     bucket: dict[tuple[str, str, str, str], dict[str, Any]] = {}
     suggested_locales: list[str] = []
     suggested_outputs: list[str] = []
+    detected_surfaces: list[str] = []
 
     for artifact in evidence.get("artifacts", []):
         artifact_entries, locales, outputs = extract_from_artifact(artifact)
         for entry in artifact_entries:
+            surface = canonicalize_surface(str(entry.get("surface") or ""))
+            if surface:
+                entry["surface"] = surface
+                if surface not in detected_surfaces:
+                    detected_surfaces.append(surface)
             merge_candidate(bucket, entry)
         for locale in locales:
             if locale not in suggested_locales:
@@ -574,12 +630,14 @@ def main() -> int:
         "source_locale": evidence.get("source_locale") or "en",
         "suggested_target_locales": suggested_locales,
         "suggested_target_outputs": suggested_outputs,
+        "detected_surfaces": detected_surfaces,
         "entries": entries,
         "summary": {
             "artifact_count": len(evidence.get("artifacts", [])),
             "candidate_count": len(entries),
             "suggested_target_locales": suggested_locales,
             "suggested_target_outputs": suggested_outputs,
+            "detected_surfaces": detected_surfaces,
         },
     }
 

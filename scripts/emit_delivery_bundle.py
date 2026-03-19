@@ -57,6 +57,21 @@ def parse_list(value: Any) -> list[str]:
     return [str(item).strip() for item in items if str(item).strip()]
 
 
+def scoped_entries(manifest: dict[str, Any]) -> list[dict[str, Any]]:
+    included_surfaces = set(parse_list(manifest.get("included_surfaces")))
+    entries = manifest.get("entries", [])
+    if not included_surfaces:
+        return [entry for entry in entries if isinstance(entry, dict)]
+    scoped: list[dict[str, Any]] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        entry_surface = str(entry.get("surface") or "").strip()
+        if not entry_surface or entry_surface in included_surfaces:
+            scoped.append(entry)
+    return scoped
+
+
 def translation_value(value: Any) -> str:
     if isinstance(value, str):
         return value
@@ -117,7 +132,7 @@ def adapt_platform_text(
 
 def locales_from_manifest(manifest: dict[str, Any]) -> list[str]:
     locales: set[str] = set()
-    for entry in manifest.get("entries", []):
+    for entry in scoped_entries(manifest):
         translations = entry.get("translations", {})
         if isinstance(translations, dict):
             locales.update(str(locale) for locale in translations.keys())
@@ -151,6 +166,7 @@ def write_csv(manifest: dict[str, Any], locales: list[str], out_dir: Path) -> No
         writer.writerow(
             [
                 "key",
+                "surface",
                 "locale",
                 "value",
                 "source_text",
@@ -161,7 +177,7 @@ def write_csv(manifest: dict[str, Any], locales: list[str], out_dir: Path) -> No
                 "status",
             ]
         )
-        for entry in manifest.get("entries", []):
+        for entry in scoped_entries(manifest):
             translations = entry.get("translations", {})
             for locale in locales:
                 value = translation_value(translations.get(locale))
@@ -172,6 +188,7 @@ def write_csv(manifest: dict[str, Any], locales: list[str], out_dir: Path) -> No
                 writer.writerow(
                     [
                         entry.get("key", ""),
+                        entry.get("surface", ""),
                         locale,
                         value,
                         entry.get("source_text", ""),
@@ -189,7 +206,7 @@ def write_json(manifest: dict[str, Any], locales: list[str], out_dir: Path) -> N
     base.mkdir(parents=True, exist_ok=True)
     for locale in locales:
         payload = {}
-        for entry in manifest.get("entries", []):
+        for entry in scoped_entries(manifest):
             translations = entry.get("translations", {})
             text = translation_value(translations.get(locale))
             if text:
@@ -214,7 +231,7 @@ def write_ios(
     base.mkdir(parents=True, exist_ok=True)
     for locale in locales:
         lines = []
-        for entry in manifest.get("entries", []):
+        for entry in scoped_entries(manifest):
             translations = entry.get("translations", {})
             text = translation_value(translations.get(locale))
             if text:
@@ -238,7 +255,7 @@ def write_android(
     base.mkdir(parents=True, exist_ok=True)
     for locale in locales:
         lines = ['<?xml version="1.0" encoding="utf-8"?>', "<resources>"]
-        for entry in manifest.get("entries", []):
+        for entry in scoped_entries(manifest):
             translations = entry.get("translations", {})
             text = translation_value(translations.get(locale))
             if text:
@@ -258,10 +275,11 @@ def write_summary(
     warnings: list[dict[str, Any]],
 ) -> None:
     summary = {
-        "entry_count": len(manifest.get("entries", [])),
+        "entry_count": len(scoped_entries(manifest)),
         "locales": locales,
         "formats": sorted(formats),
         "warnings": warnings,
+        "included_surfaces": parse_list(manifest.get("included_surfaces")),
     }
     (out_dir / "summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2) + "\n",

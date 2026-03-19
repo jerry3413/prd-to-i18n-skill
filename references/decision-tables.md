@@ -52,11 +52,12 @@ Treat `draft-only` and `release-ready` as internal labels. In user-facing conver
 
 When `delivery-intent` is true:
 
-1. ask for the target languages
-2. ask what kind of delivery content the user wants, such as a source-copy list, translation table, reviewer handoff, or import-ready package
-3. ask for the file format or handoff format that the team needs
-4. ask whether this area was localized before; if yes, request the old files or exports because they help avoid duplicate keys
-5. if the user needs the output to match an existing internal system format, ask for a sample or template file
+1. if the source clearly mixes more than one product surface, ask which surfaces are in scope for this delivery
+2. ask for the target languages
+3. ask what kind of delivery content the user wants, such as a source-copy list, translation table, reviewer handoff, or import-ready package
+4. ask for the file format or handoff format that the team needs
+5. ask whether this area was localized before; if yes, request the old files or exports because they help avoid duplicate keys
+6. if the user needs the output to match an existing internal system format, ask for a sample or template file
 
 Only skip these questions when one of the following is also true:
 
@@ -106,6 +107,7 @@ Infer key strategy in this order:
 | raw-material request before the goal is confirmed | allow only lightweight preflight checks such as file type, page count, or whether text appears selectable; do not run full extraction, OCR, candidate building, or manifest generation yet |
 | `new-build` without older localization files and request is draft-only | continue, but skip high-confidence dedupe and reuse |
 | raw-material request where draft-only vs release-ready is still unclear | block and confirm the goal first |
+| final delivery request where the PRD clearly mixes more than one product surface and scope is not frozen yet | block and ask which surfaces this delivery should cover |
 | final delivery request without target languages | block and ask for the target languages first |
 | final delivery request without delivery content type | block and ask whether the user wants a source-copy list, translation table, reviewer handoff, or import-ready package |
 | final delivery request without file format | block and ask for the file format or handoff format |

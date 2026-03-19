@@ -278,6 +278,35 @@ def build_large_parallel_manifest(count: int) -> dict[str, Any]:
     }
 
 
+def build_mixed_surface_candidates() -> dict[str, Any]:
+    return {
+        "schema_version": "1.0",
+        "created_at": "2026-03-19T00:00:00Z",
+        "source_locale": "zh-Hans",
+        "detected_surfaces": ["app", "backend-admin"],
+        "entries": [
+            {
+                "surface": "app",
+                "screen": "gallery",
+                "component": "button",
+                "intent": "open_album",
+                "source_text": "打开相册",
+                "background": "用户端相册入口按钮",
+                "source_evidence": {"extraction_mode": "structured-text", "confidence": "high", "verified_text": True, "artifacts": []},
+            },
+            {
+                "surface": "backend-admin",
+                "screen": "intro_content",
+                "component": "button",
+                "intent": "submit_current_language",
+                "source_text": "提交当前语言",
+                "background": "后台详情页底部操作按钮",
+                "source_evidence": {"extraction_mode": "structured-text", "confidence": "high", "verified_text": True, "artifacts": []},
+            },
+        ],
+    }
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory(prefix="i18n-smoke-") as temp_dir:
         temp = Path(temp_dir)
@@ -447,6 +476,43 @@ def main() -> int:
         expect(snapshot_manifest_stub["revision_loop_limit"] == 2, "manifest stub should set revision loop limit")
         expect(snapshot_manifest_stub["entries"], "manifest stub should contain entries")
 
+        mixed_surface_candidates_path = temp / "mixed-surface-candidates.json"
+        mixed_surface_manifest_path = temp / "mixed-surface-manifest.json"
+        write_json(mixed_surface_candidates_path, build_mixed_surface_candidates())
+        run_script(
+            str(SCRIPTS_DIR / "build_manifest_stub.py"),
+            str(mixed_surface_candidates_path),
+            "--task-mode",
+            "new-build",
+            "--included-surfaces",
+            "app",
+            "--target-locales",
+            "zh-Hans,en",
+            "--target-outputs",
+            "manifest,csv,json",
+            "--output",
+            str(mixed_surface_manifest_path),
+        )
+        mixed_surface_manifest = load_json(mixed_surface_manifest_path)
+        expect(mixed_surface_manifest["included_surfaces"] == ["app"], "manifest stub should preserve the requested included surfaces")
+        expect(len(mixed_surface_manifest["entries"]) == 1, "manifest stub should filter out entries outside the included surfaces")
+        expect(mixed_surface_manifest["entries"][0]["surface"] == "app", "remaining entry should stay inside scope")
+        mixed_surface_bundle_dir = temp / "mixed-surface-bundle"
+        run_script(
+            str(SCRIPTS_DIR / "emit_delivery_bundle.py"),
+            str(mixed_surface_manifest_path),
+            "--out-dir",
+            str(mixed_surface_bundle_dir),
+            "--formats",
+            "manifest,csv,json",
+            "--locales",
+            "zh-Hans,en",
+        )
+        mixed_surface_summary = load_json(mixed_surface_bundle_dir / "summary.json")
+        mixed_surface_json = load_json(mixed_surface_bundle_dir / "json" / "zh-Hans.json")
+        expect(mixed_surface_summary["entry_count"] == 1, "delivery bundle summary should respect included_surfaces")
+        expect(list(mixed_surface_json.keys()) == ["app_gallery_button_open_album"], "delivery bundle should only export in-scope entries")
+
         qa_report_path = temp / "qa-report.json"
         run_script(
             str(SCRIPTS_DIR / "qa_manifest.py"),
@@ -476,7 +542,7 @@ def main() -> int:
         print(
             json.dumps(
                 {
-                    "checks": 14,
+                    "checks": 16,
                     "status": "passed",
                     "temp_dir": str(temp),
                 },

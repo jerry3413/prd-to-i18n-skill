@@ -37,6 +37,8 @@ Anthropic's latest guidance favors keeping clarification-heavy work in the main 
    - PRD
    - PDF attachments
    - screenshots or Figma export
+   - detected product surfaces, such as app, web, seller, backend-admin, or internal-tool
+   - which surfaces are included in this delivery
    - whether the request is `document-translation`, `draft-only`, or `delivery-intent`
    - runtime capability path: `text-first`, `native-vision`, `vision-extension`, `local-ocr`, or `manual-fallback`
    - target languages
@@ -75,7 +77,8 @@ Prefer the simplest interpretation first:
 - if the user asks to translate the whole PRD, the whole PDF, or the whole spec, keep the request in this skill and route it into document translation unless they switch to localization delivery
 - if the user gives a PRD, PDF, Word spec, or release document, do not jump straight into translation or full-text extraction; first confirm in plain language whether they want a draft copy table or a final developer-ready package
 - if the user confirms whole-document translation, ask what language they want; only ask about translated Markdown, bilingual output, or another final shape if that choice actually matters
-- after the user confirms the final delivery path, ask four user-facing questions:
+- after the user confirms the final delivery path, ask the minimum user-facing questions needed to freeze scope:
+  - which product surfaces this delivery should cover, but only when the source clearly mixes more than one surface
   - what languages do you need
   - did you do this area before, and do you already have old localization files
   - what kind of deliverable do you want: source-copy list, translation table, reviewer handoff, or import-ready package
@@ -101,6 +104,7 @@ When Claude Code project subagents are available, the main thread should still o
 - no confirmed scope yet when the user says "翻译我的PRD" or another ambiguous spec-translation request; do not ask for the target language until scope is confirmed
 - no target language when the user asked for full-document translation
 - no confirmed goal yet when the request starts from raw PRD/PDF/Word materials and it is still unclear whether the user wants a draft copy table or a final delivery package
+- no confirmed included surfaces yet when the PRD clearly mixes more than one product surface and the user asked for final delivery
 - no target languages when the user asked for final delivery
 - no delivery content type when the user asked for final delivery
 - no file format when the user asked for final delivery
@@ -135,6 +139,7 @@ Good:
 - “你是想让我翻译整个 PRD，还是只翻译 PRD 里会出现在产品里的文案？”
 - “你是要我先整理一版待翻译文案，还是直接给你一份可以交付的多语言包？”
 - “如果你要交付包，我还需要 4 个信息：要哪些语言、以前这块有没有做过多语言、有的话发旧文件、你要的是文案清单还是翻译表还是导入包、最后要什么文件格式。”
+- “这份 PRD 里混了不止一种内容范围。你这次要覆盖哪些界面？只做用户端会看到的内容，还是也包含商家端、运营后台或其他内部页面？”
 - “如果你们以前做过这块多语言，把旧文件发我就行。我会顺手帮你避开重复建 key。没有也可以直接说没有。”
 - “你最后要的内容是什么：源文案清单、翻译表、审核表，还是开发可导入包？”
 - “你最后要什么文件：CSV、JSON、iOS `.strings`、Android `strings.xml`、Web JSON，还是别的格式？”
@@ -155,6 +160,7 @@ Weak:
 - “Please choose between basic, review, and strict mode.”
 - “我现在在确认它是不是段落+表格+截图说明。”
 - “我先给你写成一个 md 文件。”
+- “后台这块我先默认不翻。”
 
 ## Output Contract
 
