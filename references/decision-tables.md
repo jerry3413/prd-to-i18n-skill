@@ -54,15 +54,15 @@ When `delivery-intent` is true:
 
 1. if the source clearly mixes more than one product surface, ask which surfaces are in scope for this delivery
 2. ask for the target languages
-3. ask what kind of delivery content the user wants, such as a source-copy list, translation table, reviewer handoff, or import-ready package
-4. ask for the file format or handoff format that the team needs
-5. ask whether this area was localized before; if yes, request the old files or exports because they help avoid duplicate keys
+3. ask whether this area was localized before; if yes, request the old files or exports because they help avoid duplicate keys
+4. ask what kind of delivery content the user wants, such as a source-copy list, translation table, reviewer handoff, or import-ready package
+5. ask what handoff shape the team actually needs; a carrier label such as JSON, CSV, or XLSX is not enough when the team expects a specific schema
 6. if the user needs the output to match an existing internal system format, ask for a sample or template file
 
 Only skip these questions when one of the following is also true:
 
 - the user explicitly says `draft only`, `just translate`, `just extract copy`, or another phrase that clearly opts out of release-ready delivery
-- the older localization files, delivery content type, and file format are already present in the provided files
+- the older localization files status, delivery content type, and handoff format are already present in the provided files
 - team defaults are already known in the workspace and are safe to apply
 
 ## PRD Translation Routing Rule
@@ -109,8 +109,10 @@ Infer key strategy in this order:
 | raw-material request where draft-only vs release-ready is still unclear | block and confirm the goal first |
 | final delivery request where the PRD clearly mixes more than one product surface and scope is not frozen yet | block and ask which surfaces this delivery should cover |
 | final delivery request without target languages | block and ask for the target languages first |
+| final delivery request without older-localization-files status | block before key creation and ask whether this area already has older localization files or exports |
 | final delivery request without delivery content type | block and ask whether the user wants a source-copy list, translation table, reviewer handoff, or import-ready package |
-| final delivery request without file format | block and ask for the file format or handoff format |
+| final delivery request with only a carrier answer such as JSON, CSV, or XLSX | block and ask what the team's handoff needs to look like, and whether there is an old sample or template |
+| final delivery request without file format or handoff format | block and ask for the file format or handoff format |
 | final delivery request that must match an internal system, but no sample/template was provided | block and ask for a sample or template |
 | final delivery request with missing delivery details | do not default to CSV, JSON, or any other output format |
 | `new-build` without older localization files and request looks like release prep | continue, but state that duplicate-key detection will be lower confidence |
@@ -120,6 +122,7 @@ Infer key strategy in this order:
 | export requested without target outputs | ask for outputs before export |
 | release-intent request without target outputs or handoff standard | block and ask for target outputs before final translation/export work |
 | locale coverage unclear | ask for target locales, otherwise keep only the source locale final |
+| final delivery result still has unresolved assumptions or excluded items | surface them in the user-facing reply; do not hide them only in generated artifacts |
 
 ## Draft Result Presentation Rule
 

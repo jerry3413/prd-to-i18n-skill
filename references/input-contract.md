@@ -72,10 +72,21 @@ If the user confirms the final delivery path, then ask:
 
 1. which product surfaces this delivery should cover, but only when the source clearly mixes more than one surface
 1. the target languages
-2. whether this area was localized before, and if so ask for the old files or exports
+2. whether this area was localized before, and if so ask for the old files or exports before freezing the key plan
 3. what kind of deliverable the user wants, such as a source-copy list, translation table, reviewer handoff, or import-ready package
-4. the final output format or handoff standard so the skill knows what the final delivery package must look like
-5. a sample or template only when the result must match an existing internal system format
+4. the final handoff format the team can actually use; a carrier answer such as JSON, CSV, or XLSX is not enough when the team expects a specific field layout
+5. a sample or template when the result must match an existing internal system format
+
+Treat the final delivery contract as unsettled until all of the following are answered:
+
+1. languages
+2. in-scope product content when the source mixes more than one surface
+3. older-localization-files status
+4. deliverable type
+5. handoff format
+
+The user may answer `no old files`, but they still need to answer that question before key reuse or new-key decisions are treated as final.
+If the user only says `JSON`, `CSV`, or `XLSX`, ask one more question about the actual team handoff shape. Do not treat the carrier alone as the full contract unless the user explicitly accepts the skill's built-in default exporter shape.
 
 For draft copy-list work, if the result set is small and the user did not ask for a file, show the draft inline first. Only create a file by default when the result is large enough to be awkward in chat or when the next step depends on a saved artifact.
 
@@ -85,7 +96,7 @@ Do not treat PRD as globally mandatory. Match the requirement to the task:
 
 - `new-build`
   Require a PRD, a structured copy list, or another reliable source of new text.
-  If the request is a final delivery request rather than a simple draft, require target languages, delivery content type, and target output formats or handoff standard. Older localization files are strongly recommended but not mandatory.
+  If the request is a final delivery request rather than a simple draft, require target languages, delivery content type, and target output formats or handoff standard. The user must also answer whether older localization files exist before key decisions are treated as final. Older localization files themselves are strongly recommended but not mandatory.
 - `change-sync`
   Require changed source text such as a PRD diff, copy list, or updated source file, plus the current localization snapshot.
 - `dedupe`
@@ -120,6 +131,7 @@ At minimum, ask the team to export or provide:
 With only these fields, the skill can do basic duplicate checks, key suggestions, and bundle generation.
 
 Without older localization files, do not present dedupe or reuse as high-confidence. For final delivery requests, ask whether the team has old files first, but continue if they say they do not.
+Without a team sample or explicit acceptance of the built-in default exporter shape, do not present a carrier-only output such as JSON or CSV as the team's final handoff format.
 
 If the source comes from a screenshot or PDF instead of a snapshot, require at least:
 

@@ -71,14 +71,16 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    - a simple draft list of translatable copy
    - a final localization package that the team can import or hand to developers
    Only after the user confirms the final delivery path should you require:
-   - which product surfaces are in scope when the PRD mixes more than one surface, such as app, web, seller, backend-admin, or other internal tools
+   - which product content is in scope when the PRD mixes more than one surface, such as app, web, seller, backend-admin, or other internal tools
    - the target languages
+   - whether this area was localized before, and if so ask for the old files or exports before you freeze keys or make reuse claims
    - the delivery content type, such as a source-copy list, translation table, reviewer handoff, or import-ready package
-   - the file format or handoff format
-   - a sample or template, but only when the user needs the output to match an existing internal system format
-   Ask whether they already have older localization files or exports, but treat that as a dedupe aid rather than a default blocker.
+   - the handoff shape the team actually needs; a carrier label such as JSON, CSV, or XLSX is not enough when the team expects a specific field layout
+   - a sample or template whenever the team needs the output to match an existing internal system format or old import schema
+   The files themselves are not a default blocker, but the user's answer about whether old files exist is required before you freeze the key plan.
    If the PRD clearly mixes more than one product surface, do not guess which ones belong to this release. Ask the user which surfaces this delivery should cover before you freeze the manifest or create keys.
    After the user picks the final delivery path, do not continue into extraction or output generation until the required delivery details are answered.
+   A bare answer such as `JSON`, `CSV`, or `XLSX` does not settle the final delivery contract unless the user explicitly accepts the built-in default exporter shape.
    Before that question is answered, allow only lightweight preflight checks such as file type, page count, or whether the document appears to contain selectable text. Do not run full text extraction, OCR, copy-candidate extraction, or manifest building yet.
    The first substantive reply for raw materials must contain the goal-confirmation question before any suggestion that you are about to extract, translate, or generate output files.
    In user-facing replies, describe the task in plain language instead of requiring the user to know the mode name.
@@ -89,7 +91,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    - the target languages
    - the delivery content type
    - the target outputs or handoff standard for final delivery
-   - any older localization files or export snapshot that can help avoid duplicate keys
+   - whether older localization files or export snapshots exist, and collect them when they do
    - a sample or template file if the final package must match the team's existing schema
    Apply the source-priority rule from [references/decision-tables.md](references/decision-tables.md).
    Accept raw source bundles such as:
@@ -155,6 +157,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 9. Decide reuse versus creation.
    Apply [references/review-policy.md](references/review-policy.md) and the human-gate rule from [references/decision-tables.md](references/decision-tables.md).
    Only auto-reuse when `source_text + intent + context` match exactly.
+   For final delivery, do not freeze the key plan until the user has answered whether older localization files exist for this area.
    Route fuzzy matches to review.
    Never let low-confidence automation overwrite completed high-risk content.
 10. Plan execution before delegating.
@@ -167,6 +170,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    - translation pass: use the `i18n-translator` subagent for prepared manifest slices
    - review pass: use the `i18n-reviewer` subagent for release gating
    If review fails, revise only the affected entries and re-run review.
+   For final delivery, the user-facing response must make the review step visible. State what was reviewed, what assumptions remain, and what items were excluded or left pending. Do not hide those facts only in generated files.
 12. Run deterministic QA.
    Run `scripts/qa_manifest.py` before export or API writeback.
    Expect QA to catch at least:
@@ -179,9 +183,10 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 13. Emit delivery bundles.
    Run `scripts/emit_delivery_bundle.py` to generate manifest JSON, flat CSV, Web/App JSON, iOS `.strings`, and Android `strings.xml`.
    Keep canonical placeholders in the manifest and let exporters adapt them to platform-native formats.
-   If the target languages, delivery content type, or file format are still unknown, do not emit delivery files and do not silently default to CSV, JSON, or any other format.
+   If the target languages, delivery content type, old-file status, or file format are still unknown, do not emit delivery files and do not silently default to CSV, JSON, or any other format.
    Stop at a candidate list or draft manifest only and say the delivery contract is not settled yet. If that draft result is small, show it inline before creating any file.
    If the user needs a custom team format and no sample or template was provided, do not claim the output is final delivery-ready.
+   Do not treat a carrier-only request such as `JSON` or `CSV` as a settled team handoff format unless the user explicitly accepts the skill's built-in default export profile.
 
 ## Apply The Policy
 
