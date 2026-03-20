@@ -63,6 +63,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    For raw PRD/PDF/Word/spec requests, first clarify whether the user wants:
    - full document translation
    - localization copy extraction and delivery
+   If the user already says `多语言`, `i18n`, `本地化`, `交付`, `导出`, `handoff`, or another clearly delivery-oriented phrase, do not ask the document-vs-localization split again. Go straight into the localization-delivery branch.
    If the user confirms full-document translation, collect:
    - the target language
    - the preferred output form only if the user cares about the final shape; otherwise default to a complete translated version that follows the source structure
@@ -78,9 +79,11 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    - the handoff shape the team actually needs; a carrier label such as JSON, CSV, or XLSX is not enough when the team expects a specific field layout
    - a sample or template whenever the team needs the output to match an existing internal system format or old import schema
    The files themselves are not a default blocker, but the user's answer about whether old files exist is required before you freeze the key plan.
+   When more than one of those delivery details is still missing, ask for them in one bundled delivery-contract question instead of splitting them into separate turns.
    If the PRD clearly mixes more than one product surface, do not guess which ones belong to this release. Ask the user which surfaces this delivery should cover before you freeze the manifest or create keys.
    After the user picks the final delivery path, do not continue into extraction or output generation until the required delivery details are answered.
    A bare answer such as `JSON`, `CSV`, or `XLSX` does not settle the final delivery contract unless the user explicitly accepts the built-in default exporter shape.
+   If the user's first answer only covers part of the delivery contract, ask for the remaining missing items together in one follow-up instead of serializing them into one-question-per-turn.
    Before that question is answered, allow only lightweight preflight checks such as file type, page count, or whether the document appears to contain selectable text. Do not run full text extraction, OCR, copy-candidate extraction, or manifest building yet.
    The first substantive reply for raw materials must contain the goal-confirmation question before any suggestion that you are about to extract, translate, or generate output files.
    In user-facing replies, describe the task in plain language instead of requiring the user to know the mode name.

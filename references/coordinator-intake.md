@@ -70,6 +70,7 @@ Prefer the simplest interpretation first:
 
 - if the user says "翻译我的PRD", "translate this PRD", or something similarly ambiguous, first ask whether they want the whole document translated or whether they want the user-facing copy extracted for localization delivery
 - do not default that request into whole-document translation just because the wording contains “翻译” or “translate”
+- if the user already says `多语言`, `i18n`, `本地化`, `交付`, `导出`, or another delivery-intent phrase, do not ask the whole-document-vs-localization split again
 - if the user gives a PRD or copy list, start from `new-build` or `change-sync`
 - if the user gives a key and one string, start from `translation-fix`
 - if the user gives a manifest or only asks for output files, start from `export-only`
@@ -83,6 +84,7 @@ Prefer the simplest interpretation first:
   - did you do this area before, and do you already have old localization files; ask this before freezing keys
   - what kind of deliverable do you want: source-copy list, translation table, reviewer handoff, or import-ready package
   - what handoff shape does your team actually need; a carrier answer such as JSON, CSV, or XLSX is not enough if the team expects a fixed schema
+- when several of those answers are still missing, ask them in one bundled delivery-contract question instead of one turn per field
 - only ask for a sample or template when the user says the output must match an existing internal system or old import format, or when the user gives only a carrier answer and the team schema is still unclear
 - if a draft copy result is small, show it directly in the conversation first and offer a file only if the user wants one
 
@@ -90,7 +92,7 @@ When asking for data, prefer:
 
 - one export folder over many explicit file specs
 - one context sidecar over repeated per-string explanations
-- one blocking question over a checklist
+- one bundled delivery-contract question over four serialized turns
 
 Before processing multimodal evidence, run the capability route. See [Capability Routing](capability-routing.md).
 Use [Decision Tables](decision-tables.md) for source priority, fallback behavior, and human-gate triggers.
@@ -139,10 +141,9 @@ Good:
 - “你是要我翻整篇文档，还是只把里面需要做多语言的界面文案拎出来？这两个流程不一样。”
 - “你是想让我翻译整个 PRD，还是只翻译 PRD 里会出现在产品里的文案？”
 - “你是要我先整理一版待翻译文案，还是直接给你一份可以交付的多语言包？”
-- “如果你要交付包，我还需要 4 个信息：要哪些语言、以前这块有没有做过多语言、有的话发旧文件、你要的是文案清单还是翻译表还是导入包、最后要什么文件格式。”
-- “如果你要交付包，我还需要 4 个信息：要哪些语言、以前这块有没有做过多语言、有的话发旧文件、你要的是文案清单还是翻译表还是导入包、你们团队最后拿什么格式接这份交付。”
+- “如果你要交付包，我一次把关键信息收齐：1. 这次 PRD 里哪些内容算进翻译范围，2. 要哪些语言，3. 以前这块有没有旧 key / 旧翻译 / 旧交付包，有的话发我一份，4. 你们团队最后拿什么格式接这份交付。”
+- “如果这块以前已经有 key、旧翻译或者旧交付包，发我一份就行。我会先拿来避免重复建 key 和重复翻译。没有也直接说没有。”
 - “这份 PRD 里混了不止一种内容。你这次要把哪些内容算进交付范围？比如只做安卓/iOS 用户端，还是也包含后台返回给用户的提示文案、商家端或其他内部页面？”
-- “如果你们以前做过这块多语言，把旧文件发我就行。我会顺手帮你避开重复建 key。没有也可以直接说没有。”
 - “你最后要的内容是什么：源文案清单、翻译表、审核表，还是开发可导入包？”
 - “你们团队最后拿什么格式接这份交付？如果你只说 JSON / CSV / XLSX，我还需要知道字段怎么组织；有旧样本就发我，我按那个结构出。”
 - “如果你们系统有固定模板，或者你想跟旧格式保持一致，发我一份旧样本就行。没有的话也请直接说，我再判断能不能按通用格式交付。”
@@ -193,7 +194,7 @@ PRD is present. Screenshots are missing but optional for this batch.
 <questions>
   <question id="goal">
     <why>I need to know whether you want a draft list of translatable copy first, or a final multi-language package your team can use directly.</why>
-    <accepted_formats>Reply with either “整理待翻译文案” or “直接做交付包”. If you want the delivery package, also include the languages you need, what kind of deliverable you want, and the file format you need.</accepted_formats>
+    <accepted_formats>Reply with either “整理待翻译文案” or “直接做交付包”. If you want the delivery package, also include the scope of content, the languages you need, whether this area already has old localization files, and what format your team expects to receive.</accepted_formats>
     <fallback>If you do not decide yet, I will stop before heavy extraction and will not pretend I can finish final delivery.</fallback>
   </question>
 </questions>
@@ -325,9 +326,9 @@ User-facing version of the same follow-up should usually look like this:
 好，我按“交付包”来做。
 
 还差 4 个信息，我拿到就继续：
-1. 要哪些语言
-2. 以前这块有没有做过多语言？有的话把旧文件发我；没有直接说没有
-3. 你要的内容是什么：源文案清单、翻译表、审核表，还是开发可导入包
+1. 这次 PRD 里哪些内容算进翻译范围
+2. 要哪些语言
+3. 如果这块以前已经有 key、旧翻译或者旧交付包，发我一份；没有直接说没有
 4. 你们团队最后拿什么格式接这份交付？如果只是 JSON / CSV / XLSX，我还需要知道字段怎么组织
 
 如果你们系统有固定模板，或者你想跟旧格式保持一致，再发我一份旧样本；没有也直接说没有。

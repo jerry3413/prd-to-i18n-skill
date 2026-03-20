@@ -47,6 +47,7 @@ Common signals:
 - the document itself describes supported locales, release scope, or platform rollout
 
 If `delivery-intent` is inferred from raw materials instead of stated explicitly, confirm the goal with the user before moving from extraction into translation or export.
+If `delivery-intent` is stated explicitly by the user, do not ask again whether they want whole-document translation or localization delivery.
 
 Treat `draft-only` and `release-ready` as internal labels. In user-facing conversation, ask in plain language whether the user wants a simple draft list of translatable copy or a final package for import or developer handoff.
 
@@ -58,6 +59,8 @@ When `delivery-intent` is true:
 4. ask what kind of delivery content the user wants, such as a source-copy list, translation table, reviewer handoff, or import-ready package
 5. ask what handoff shape the team actually needs; a carrier label such as JSON, CSV, or XLSX is not enough when the team expects a specific schema
 6. if the user needs the output to match an existing internal system format, ask for a sample or template file
+
+If more than one delivery-detail field is still missing, ask for all missing delivery-contract fields in one bundled question. Do not split them into separate turns unless the user answered only part of that bundle and one specific item remains ambiguous.
 
 Only skip these questions when one of the following is also true:
 
@@ -100,6 +103,7 @@ Infer key strategy in this order:
 | Situation | Action |
 | --- | --- |
 | request appears to be PRD/spec translation but the scope is still ambiguous | block and clarify whether the user wants whole-document translation or localization copy extraction |
+| request already explicitly says `多语言`, `i18n`, `本地化`, `交付`, `导出`, or another delivery-intent phrase | skip the document-vs-localization split and go straight to the localization-delivery contract |
 | ambiguous PRD/spec translation where the user did not choose a path yet | do not default to full-document translation; ask the scope question first |
 | document-translation request without target language | block and ask for the target language |
 | document-translation request with scope confirmed | continue with document translation and do not ask localization-only delivery questions |
@@ -113,6 +117,7 @@ Infer key strategy in this order:
 | final delivery request without delivery content type | block and ask whether the user wants a source-copy list, translation table, reviewer handoff, or import-ready package |
 | final delivery request with only a carrier answer such as JSON, CSV, or XLSX | block and ask what the team's handoff needs to look like, and whether there is an old sample or template |
 | final delivery request without file format or handoff format | block and ask for the file format or handoff format |
+| final delivery request with several delivery details missing at once | ask one bundled delivery-contract question instead of one turn per field |
 | final delivery request that must match an internal system, but no sample/template was provided | block and ask for a sample or template |
 | final delivery request with missing delivery details | do not default to CSV, JSON, or any other output format |
 | `new-build` without older localization files and request looks like release prep | continue, but state that duplicate-key detection will be lower confidence |

@@ -77,6 +77,8 @@ If the user confirms the final delivery path, then ask:
 4. the final handoff format the team can actually use; a carrier answer such as JSON, CSV, or XLSX is not enough when the team expects a specific field layout
 5. a sample or template when the result must match an existing internal system format
 
+When several of those answers are still missing, collect them in one bundled delivery-contract question. Do not serialize them into one turn per field unless the user already answered part of the bundle and only one item remains unresolved.
+
 Treat the final delivery contract as unsettled until all of the following are answered:
 
 1. languages
@@ -87,6 +89,7 @@ Treat the final delivery contract as unsettled until all of the following are an
 
 The user may answer `no old files`, but they still need to answer that question before key reuse or new-key decisions are treated as final.
 If the user only says `JSON`, `CSV`, or `XLSX`, ask one more question about the actual team handoff shape. Do not treat the carrier alone as the full contract unless the user explicitly accepts the skill's built-in default exporter shape.
+If the user already made delivery intent explicit in the first request, skip the document-vs-localization split and go directly to this bundled delivery-contract question.
 
 For draft copy-list work, if the result set is small and the user did not ask for a file, show the draft inline first. Only create a file by default when the result is large enough to be awkward in chat or when the next step depends on a saved artifact.
 
