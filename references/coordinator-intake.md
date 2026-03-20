@@ -176,6 +176,17 @@ For final-delivery replies, always surface these points in the conversation itse
 - what assumptions remain
 - what items were excluded or left pending
 - whether a review pass ran
+- where the review summary artifact is, for example `review-report.json`
+
+If review produced any `human-gate` items, do not make the user open a file just to discover them. List each required confirmation directly in the reply with:
+
+- `key`
+- `source_text`
+- current proposed translation or decision
+- why it needs confirmation
+- what the user needs to confirm
+
+When any `human-gate` items remain, describe the package as pending confirmation rather than fully final.
 
 Internal XML contract:
 
@@ -213,6 +224,7 @@ Follow Anthropic's latest prompting guidance:
 - include 3 to 5 examples for recurring formats
 - keep questions specific and answerable
 - if the source came from images or scanned PDFs, state the confidence limit explicitly
+- when review ends in `human-gate`, surface those items inline instead of only pointing to a file
 
 ## Few-Shot Examples
 

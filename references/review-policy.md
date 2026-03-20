@@ -50,6 +50,30 @@ Run translation and review as separate passes:
 4. Revise only failed entries.
 5. Run deterministic QA before export or writeback.
 
+The review pass must be logically independent from generation. Do not let the same generation step mark its own output as `pass` without a separate review step.
+
+## Review Output Contract
+
+For final delivery, produce one review artifact such as `review-report.json` with:
+
+- `summary`
+  - reviewed entries
+  - passed
+  - revised
+  - human-gate
+  - excluded
+- `findings`
+  - `key`
+  - `decision` as `pass`, `revise`, `human-gate`, or `excluded`
+  - `reason`
+  - `action`
+- `assumptions_and_pending`
+  - unresolved assumptions
+  - excluded items
+  - pending confirmations
+
+If any item is `human-gate`, also surface it directly in the user-facing reply. Do not require the user to inspect the review artifact first just to discover blocking confirmations.
+
 ## Missing Context Rule
 
 If `background` or `intent` is missing for ambiguous text, ask for it. If the user cannot supply it, continue only in downgraded mode and mark the entry as requiring human review.

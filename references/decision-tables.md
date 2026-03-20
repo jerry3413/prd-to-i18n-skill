@@ -128,6 +128,8 @@ Infer key strategy in this order:
 | release-intent request without target outputs or handoff standard | block and ask for target outputs before final translation/export work |
 | locale coverage unclear | ask for target locales, otherwise keep only the source locale final |
 | final delivery result still has unresolved assumptions or excluded items | surface them in the user-facing reply; do not hide them only in generated artifacts |
+| review produced any `human-gate` items | emit a review summary artifact, list each blocking confirmation directly in the conversation, and stop short of calling the delivery fully final |
+| no separate review pass ran | do not mark `ai_review` as `pass` and do not claim final delivery is complete |
 | standardized scripts are close but the model starts building a PRD/version-specific generator | do not treat that script as the final workflow; either stay in shared scripts or clearly label the helper as temporary inspection only |
 
 ## Draft Result Presentation Rule

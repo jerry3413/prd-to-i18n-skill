@@ -174,7 +174,10 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    - translation pass: use the `i18n-translator` subagent for prepared manifest slices
    - review pass: use the `i18n-reviewer` subagent for release gating
    If review fails, revise only the affected entries and re-run review.
+   Emit one review artifact such as `review-report.json` for each final-delivery run. Keep the full review summary, findings, and pending assumptions there.
+   Do not let the same generation step self-declare `ai_review: pass`. A separate review pass must decide pass, revise, or human-gate.
    For final delivery, the user-facing response must make the review step visible. State what was reviewed, what assumptions remain, and what items were excluded or left pending. Do not hide those facts only in generated files.
+   If any entry is `human-gate` or otherwise requires human confirmation, list those items directly in the conversation with the key, source text, current proposed translation or decision, why confirmation is required, and what the user must confirm. In that case, do not describe the delivery as fully finalized yet.
 12. Run deterministic QA.
    Run `scripts/qa_manifest.py` before export or API writeback.
    Expect QA to catch at least:
