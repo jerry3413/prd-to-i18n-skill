@@ -34,13 +34,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--surface", default="app", help="Surface prefix for canonical keys. Default: app")
     parser.add_argument(
         "--target-locales",
-        default="en,zh-Hans",
-        help="Comma-separated locale list required for delivery. Default: en,zh-Hans",
+        help="Comma-separated locale list required for delivery. Default: source locale only until more locales are confirmed.",
     )
     parser.add_argument(
         "--target-outputs",
-        default="manifest,csv,json,ios,android",
-        help="Comma-separated output formats. Default: manifest,csv,json,ios,android",
+        help="Comma-separated output formats. Default: manifest only until the handoff shape is confirmed.",
     )
     parser.add_argument(
         "--included-surfaces",
@@ -224,7 +222,11 @@ def infer_human_review_required(
 
 def ensure_platform_outputs(outputs: list[str]) -> list[str]:
     allowed = {"manifest", "csv", "json", "ios", "android"}
-    return [item for item in outputs if item in allowed] or ["manifest", "csv", "json", "ios", "android"]
+    invalid = [item for item in outputs if item not in allowed]
+    if invalid:
+        values = ", ".join(sorted(dict.fromkeys(invalid)))
+        raise ValueError(f"Unsupported target output(s): {values}")
+    return list(dict.fromkeys(outputs)) or ["manifest"]
 
 
 def build_manifest(args: argparse.Namespace) -> dict[str, Any]:
@@ -236,7 +238,9 @@ def build_manifest(args: argparse.Namespace) -> dict[str, Any]:
         source_payload = json.loads(source_path.read_text(encoding="utf-8"))
     source_locale = source_locale_from_payload(source_payload or {})
     target_locales = parse_list(args.target_locales)
-    if source_locale not in target_locales:
+    if not target_locales:
+        target_locales = [source_locale]
+    elif source_locale not in target_locales:
         target_locales = [source_locale, *target_locales]
     required_locale_coverage = parse_list(args.required_locale_coverage) if args.required_locale_coverage else list(target_locales)
     key_mode = infer_key_mode(raw_entries, args.key_mode)

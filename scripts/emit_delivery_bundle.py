@@ -32,7 +32,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--out-dir", required=True, help="Directory for generated artifacts.")
     parser.add_argument(
         "--formats",
-        help="Optional comma-separated formats: manifest,csv,json,ios,android. Default: manifest target_outputs or all supported formats.",
+        help="Optional comma-separated formats: manifest,csv,json,ios,android. Default: manifest target_outputs. No implicit full-bundle fallback.",
     )
     parser.add_argument(
         "--locales",
@@ -55,6 +55,20 @@ def parse_list(value: Any) -> list[str]:
     else:
         items = [value]
     return [str(item).strip() for item in items if str(item).strip()]
+
+
+def resolve_formats(args_formats: str | None, manifest: dict[str, Any]) -> set[str]:
+    allowed = {"manifest", "csv", "json", "ios", "android"}
+    formats = parse_list(args_formats) if args_formats else parse_list(manifest.get("target_outputs"))
+    invalid = [item for item in formats if item not in allowed]
+    if invalid:
+        values = ", ".join(sorted(dict.fromkeys(invalid)))
+        raise ValueError(f"Unsupported output format(s): {values}")
+    if not formats:
+        raise ValueError(
+            "No output formats configured. Pass --formats or set manifest target_outputs after the handoff shape is confirmed."
+        )
+    return set(formats)
 
 
 def scoped_entries(manifest: dict[str, Any]) -> list[dict[str, Any]]:
@@ -301,11 +315,7 @@ def main() -> int:
         or parse_list(manifest.get("target_locales"))
         or locales_from_manifest(manifest)
     )
-    formats = set(
-        parse_list(args.formats)
-        if args.formats
-        else parse_list(manifest.get("target_outputs")) or ["manifest", "csv", "json", "ios", "android"]
-    )
+    formats = resolve_formats(args.formats, manifest)
     warnings: list[dict[str, Any]] = []
 
     if "manifest" in formats:

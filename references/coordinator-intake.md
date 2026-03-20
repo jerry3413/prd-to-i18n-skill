@@ -164,6 +164,7 @@ Weak:
 - “我现在在确认它是不是段落+表格+截图说明。”
 - “我先给你写成一个 md 文件。”
 - “后台这块我先默认不翻。”
+- “我先按默认 manifest + CSV + iOS + Android 出一版，你再确认。”
 
 ## Output Contract
 
@@ -172,7 +173,7 @@ Use XML tags for coordinator-internal summaries. When replying directly to end u
 For final-delivery replies, always surface these points in the conversation itself instead of hiding them only in generated files:
 
 - whether the user provided old-file status
-- whether the output matches a team template or only the skill's default export shape
+- whether the output matches a team template, a user-confirmed built-in exporter profile, or is still only a draft because no handoff shape was confirmed
 - what assumptions remain
 - what items were excluded or left pending
 - whether a review pass ran
@@ -340,7 +341,7 @@ User-facing version of the same follow-up should usually look like this:
 1. 这次 PRD 里哪些内容算进翻译范围
 2. 要哪些语言
 3. 如果这块以前已经有 key、旧翻译、旧交付包，或者有接口能查到，告诉我一份；没有直接说没有
-4. 你们团队最后拿到的交付长什么样？如果只是 JSON / CSV / XLSX，我还需要知道字段怎么组织
+4. 你们团队最后拿到的交付长什么样？如果只是 JSON / CSV / XLSX，我还需要知道字段怎么组织；如果没有旧模板，也请直接说你要我按哪种具体结构出，比如运行时语言包 JSON、翻译表 JSON、manifest + CSV、iOS + Android
 
 如果你们系统有固定模板，或者你想跟旧格式保持一致，再发我一份旧样本；没有也直接说没有。
 ```
@@ -408,8 +409,8 @@ I still need two delivery details before I can freeze keys or choose the final e
 <questions>
   <question id="dedupe_and_schema">
     <why>I still need to know whether this area already has older localization files, and what your team's JSON is supposed to look like. If I skip either one, I may create duplicate keys or give you a JSON shape your team cannot use.</why>
-    <accepted_formats>Reply with: 1. whether this area has old localization files or exports, 2. whether your JSON should be an app runtime language pack, a row-based translation handoff, or an existing internal schema, 3. an old sample if your team already has one.</accepted_formats>
-    <fallback>If you do not have old files, say “no old files”. If you do not have a fixed JSON template, say whether you want a runtime language-pack JSON or a translation-table JSON. I will not assume one for you.</fallback>
+    <accepted_formats>Reply with: 1. whether this area has old localization files or exports, 2. which concrete JSON shape you need such as an app runtime language pack, a row-based translation handoff, or an existing internal schema, 3. an old sample if your team already has one.</accepted_formats>
+    <fallback>If you do not have old files, say “no old files”. If you do not have a fixed JSON template, say exactly which JSON shape you want. I will not choose one for you.</fallback>
   </question>
 </questions>
 <next_step>

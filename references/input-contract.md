@@ -36,7 +36,7 @@ When the user wants the simplest setup, prefer:
 
 4. then build the manifest skeleton:
 
-   `python3 scripts/build_manifest_stub.py /tmp/i18n-snapshot.json --task-mode change-sync --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json`
+   `python3 scripts/build_manifest_stub.py /tmp/i18n-snapshot.json --task-mode change-sync --target-locales <confirmed-locales> --target-outputs <confirmed-outputs> --output /tmp/i18n-manifest.json`
 
 The folder path should be the default recommendation before asking the user to build explicit `--resource kind=...,path=...` descriptors.
 
@@ -53,7 +53,9 @@ If the user starts from raw PRD materials instead of exported catalogs, prefer:
 
 4. then build the manifest skeleton:
 
-   `python3 scripts/build_manifest_stub.py /tmp/copy-candidates.json --task-mode new-build --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json`
+   `python3 scripts/build_manifest_stub.py /tmp/copy-candidates.json --task-mode new-build --target-locales <confirmed-locales> --target-outputs <confirmed-outputs> --output /tmp/i18n-manifest.json`
+
+Replace `<confirmed-locales>` and `<confirmed-outputs>` only after the user confirms the delivery contract. If the handoff shape is still unsettled, keep the manifest as a draft and do not invent export targets.
 
 For work that starts from raw materials, ask one thing early:
 
@@ -73,7 +75,7 @@ If the user confirms the final delivery path, then ask:
 1. which product content this delivery should cover, but only when the source clearly mixes more than one surface
 1. the target languages
 2. whether this area already has reusable keys, old translations, old handoff packages, or an API/export path before freezing the key plan
-3. the final handoff format the team can actually use, including the required fields or files; a carrier answer such as JSON, CSV, or XLSX is not enough when the team expects a specific field layout
+3. the final handoff shape the team can actually use, including the required fields or files; a carrier answer such as JSON, CSV, or XLSX is not enough when the team expects a specific field layout
 5. a sample or template when the result must match an existing internal system format
 
 When several of those answers are still missing, collect them in one bundled delivery-contract question. Do not serialize them into one turn per field unless the user already answered part of the bundle and only one item remains unresolved.
@@ -83,10 +85,10 @@ Treat the final delivery contract as unsettled until all of the following are an
 1. languages
 2. in-scope product content when the source mixes more than one surface
 3. reusable-history status
-4. handoff format
+4. handoff shape
 
 The user may answer `no old files` or `no API`, but they still need to answer that question before key reuse or new-key decisions are treated as final.
-If the user only says `JSON`, `CSV`, or `XLSX`, ask one more question about the actual team handoff shape. Do not treat the carrier alone as the full contract unless the user explicitly accepts the skill's built-in default exporter shape.
+If the user only says `JSON`, `CSV`, or `XLSX`, ask one more question about the actual team handoff shape. Do not treat the carrier alone as the full contract unless the user explicitly chooses one concrete built-in exporter profile such as `manifest + CSV`, `Web/App JSON`, or `iOS + Android`.
 If the user already made delivery intent explicit in the first request, skip the document-vs-localization split and go directly to this bundled delivery-contract question.
 If one platform export is available and the user confirms the copy is shared across platforms, use that export as a semantic dedupe aid. Only require another platform's historical assets when the user explicitly needs platform-specific key continuity or platform-specific output mapping.
 
@@ -133,7 +135,7 @@ At minimum, ask the team to export or provide:
 With only these fields, the skill can do basic duplicate checks, key suggestions, and bundle generation.
 
 Without older localization files, do not present dedupe or reuse as high-confidence. For final delivery requests, ask whether the team has old files first, but continue if they say they do not.
-Without a team sample or explicit acceptance of the built-in default exporter shape, do not present a carrier-only output such as JSON or CSV as the team's final handoff format.
+Without a team sample or explicit confirmation of one concrete built-in exporter profile, do not present a carrier-only output such as JSON or CSV as the team's final handoff format.
 
 If the source comes from a screenshot or PDF instead of a snapshot, require at least:
 
@@ -240,7 +242,7 @@ For `release-ready`, collect:
 - the current localization baseline
 - target outputs or handoff standard
 
-If either is missing, do not silently invent a final delivery format. Stop at a draft manifest or CSV only after explaining the downgrade.
+If either is missing, do not silently invent a final delivery format. Stop at a draft manifest or inline candidate list only after explaining the downgrade.
 If the downgraded draft result is small, prefer showing it inline first instead of silently creating a file.
 
 ## Ambiguous Context Rule

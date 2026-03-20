@@ -31,6 +31,7 @@ Optimize for the simplest possible user interaction:
 - do not tell the user you need to "lock the goal", "start heavy processing", or other internal workflow phrases; just ask how they want you to handle the file
 - do not narrate internal extraction heuristics such as whether the file looks like paragraphs, tables, or screenshot notes; only tell the user whether you can extract directly or need a short cleanup pass first
 - if a draft copy result is small, show it directly in the conversation first; only create a file when the user asks for one or the result is large enough to need it
+- do not promise or generate a default delivery bundle before the user confirms the handoff shape; "I will first output manifest + CSV + iOS + Android and let you confirm later" is not allowed
 
 User-facing defaults:
 
@@ -83,10 +84,11 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    If the user provides one platform's historical snapshot and also confirms the copy is shared across platforms, use that snapshot as a semantic dedupe aid. Only require another platform's historical files when the user explicitly needs platform-specific key continuity or platform-specific output mapping.
    If the PRD clearly mixes more than one product surface, do not guess which ones belong to this release. Ask the user which surfaces this delivery should cover before you freeze the manifest or create keys.
    After the user picks the final delivery path, do not continue into extraction or output generation until the required delivery details are answered.
-   A bare answer such as `JSON`, `CSV`, or `XLSX` does not settle the final delivery contract unless the user explicitly accepts the built-in default exporter shape.
+   A bare answer such as `JSON`, `CSV`, or `XLSX` never settles the final delivery contract. The user must either describe the required fields or files, or explicitly choose one concrete built-in exporter profile such as `manifest + CSV`, `Web/App JSON`, or `iOS + Android`.
    If the user's first answer only covers part of the delivery contract, ask for the remaining missing items together in one follow-up instead of serializing them into one-question-per-turn.
    Before that question is answered, allow only lightweight preflight checks such as file type, page count, or whether the document appears to contain selectable text. Do not run full text extraction, OCR, copy-candidate extraction, or manifest building yet.
    The first substantive reply for raw materials must contain the goal-confirmation question before any suggestion that you are about to extract, translate, or generate output files.
+   Do not say you will first emit a default bundle and let the user confirm afterward. Confirmation of the handoff shape must happen before extraction, manifest building, translation, or export.
    In user-facing replies, describe the task in plain language instead of requiring the user to know the mode name.
 2. Collect the source artifacts.
    For `new-build` and `change-sync`, require a PRD, a copy list, or another reliable source of changed text.
@@ -190,10 +192,10 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 13. Emit delivery bundles.
    Run `scripts/emit_delivery_bundle.py` to generate manifest JSON, flat CSV, Web/App JSON, iOS `.strings`, and Android `strings.xml`.
    Keep canonical placeholders in the manifest and let exporters adapt them to platform-native formats.
-   If the target languages, delivery content type, old-file status, or file format are still unknown, do not emit delivery files and do not silently default to CSV, JSON, or any other format.
+   If the target languages, delivery content type, old-file status, or handoff shape are still unknown, do not emit delivery files and do not silently default to CSV, JSON, or any other format.
    Stop at a candidate list or draft manifest only and say the delivery contract is not settled yet. If that draft result is small, show it inline before creating any file.
    If the user needs a custom team format and no sample or template was provided, do not claim the output is final delivery-ready.
-   Do not treat a carrier-only request such as `JSON` or `CSV` as a settled team handoff format unless the user explicitly accepts the skill's built-in default export profile.
+   Do not treat a carrier-only request such as `JSON` or `CSV` as a settled team handoff format. Only proceed when the user has either described the required schema or explicitly chosen one concrete built-in exporter profile.
 
 ## Apply The Policy
 

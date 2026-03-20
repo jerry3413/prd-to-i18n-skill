@@ -56,7 +56,7 @@ When `delivery-intent` is true:
 1. if the source clearly mixes more than one product surface, ask which product content is in scope for this delivery
 2. ask for the target languages
 3. ask whether this area already has reusable keys, old translations, old handoff packages, or an API/export path that can be queried before new keys are created
-4. ask what the final handoff should look like, including both the package type and the required fields or files; a carrier label such as JSON, CSV, or XLSX is not enough when the team expects a specific schema
+4. ask what the final handoff should look like, including both the package type and the required fields or files; a carrier label such as JSON, CSV, or XLSX is not enough when the team expects a specific schema, and any built-in exporter profile must be confirmed explicitly by the user
 5. if the user needs the output to match an existing internal system format, ask for a sample or template file
 
 If more than one delivery-detail field is still missing, ask for all missing delivery-contract fields in one bundled question. Do not split them into separate turns unless the user answered only part of that bundle and one specific item remains ambiguous.
@@ -65,7 +65,7 @@ Only skip these questions when one of the following is also true:
 
 - the user explicitly says `draft only`, `just translate`, `just extract copy`, or another phrase that clearly opts out of release-ready delivery
 - the reusable-history status and handoff format are already present in the provided files
-- team defaults are already known in the workspace and are safe to apply
+- the user explicitly told you to reuse a known team default or old sample that is already present in the workspace
 
 ## PRD Translation Routing Rule
 
@@ -114,11 +114,12 @@ Infer key strategy in this order:
 | final delivery request where the PRD clearly mixes more than one product surface and scope is not frozen yet | block and ask which content in the PRD should count toward this delivery |
 | final delivery request without target languages | block and ask for the target languages first |
 | final delivery request without reusable-history status | block before key creation and ask whether this area already has reusable keys, old translations, old handoff packages, or an API/export path |
-| final delivery request with only a carrier answer such as JSON, CSV, or XLSX | block and ask what the team's handoff needs to look like, and whether there is an old sample or template |
+| final delivery request with only a carrier answer such as JSON, CSV, or XLSX | block and ask what the team's handoff needs to look like, and whether there is an old sample or template or one concrete built-in exporter profile the user wants |
 | final delivery request without handoff format | block and ask what the team needs to receive, not just the carrier |
 | final delivery request with several delivery details missing at once | ask one bundled delivery-contract question instead of one turn per field |
 | final delivery request that must match an internal system, but no sample/template was provided | block and ask for a sample or template |
-| final delivery request with missing delivery details | do not default to CSV, JSON, or any other output format |
+| final delivery request without a confirmed handoff shape, even if a common exporter seems likely | block and ask the user to confirm the concrete handoff shape; do not promise a default bundle first |
+| final delivery request with missing delivery details | do not default to CSV, JSON, or any other output format or exporter profile |
 | `new-build` without older localization files and request looks like release prep | continue, but state that duplicate-key detection will be lower confidence |
 | one platform snapshot is present and the user confirms the copy is shared across platforms | use that snapshot as a semantic dedupe aid; do not block on another platform's historical files unless platform-specific key continuity or output mapping is required |
 | `change-sync` or `dedupe` without snapshot | block and ask for the current catalog |

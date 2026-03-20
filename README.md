@@ -75,7 +75,7 @@ If you only have a PRD bundle:
 ```bash
 python3 scripts/ingest_artifacts.py ./prd-bundle --output /tmp/evidence.json
 python3 scripts/extract_copy_candidates.py /tmp/evidence.json --output /tmp/copy-candidates.json
-python3 scripts/build_manifest_stub.py /tmp/copy-candidates.json --task-mode new-build --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json
+python3 scripts/build_manifest_stub.py /tmp/copy-candidates.json --task-mode new-build --target-locales <confirmed-locales> --target-outputs <confirmed-outputs> --output /tmp/i18n-manifest.json
 ```
 
 #### 2. Start From Existing Localization Exports
@@ -84,7 +84,7 @@ If you already exported current strings:
 
 ```bash
 python3 scripts/normalize_snapshot.py --input-dir ./exports --metadata ./context.csv --output /tmp/i18n-snapshot.json
-python3 scripts/build_manifest_stub.py /tmp/i18n-snapshot.json --task-mode change-sync --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json
+python3 scripts/build_manifest_stub.py /tmp/i18n-snapshot.json --task-mode change-sync --target-locales <confirmed-locales> --target-outputs <confirmed-outputs> --output /tmp/i18n-manifest.json
 ```
 
 #### 3. Run QA And Export
@@ -198,7 +198,7 @@ cp /path/to/this-repo/assets/helper-agents/i18n-*.md .claude/agents/
 ```bash
 python3 scripts/ingest_artifacts.py ./prd-bundle --output /tmp/evidence.json
 python3 scripts/extract_copy_candidates.py /tmp/evidence.json --output /tmp/copy-candidates.json
-python3 scripts/build_manifest_stub.py /tmp/copy-candidates.json --task-mode new-build --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json
+python3 scripts/build_manifest_stub.py /tmp/copy-candidates.json --task-mode new-build --target-locales <confirmed-locales> --target-outputs <confirmed-outputs> --output /tmp/i18n-manifest.json
 ```
 
 #### 2. 从现有多语言导出开始
@@ -207,7 +207,7 @@ python3 scripts/build_manifest_stub.py /tmp/copy-candidates.json --task-mode new
 
 ```bash
 python3 scripts/normalize_snapshot.py --input-dir ./exports --metadata ./context.csv --output /tmp/i18n-snapshot.json
-python3 scripts/build_manifest_stub.py /tmp/i18n-snapshot.json --task-mode change-sync --target-locales en,zh-Hans,de --target-outputs manifest,json,ios,android --output /tmp/i18n-manifest.json
+python3 scripts/build_manifest_stub.py /tmp/i18n-snapshot.json --task-mode change-sync --target-locales <confirmed-locales> --target-outputs <confirmed-outputs> --output /tmp/i18n-manifest.json
 ```
 
 #### 3. 跑校验并导出
