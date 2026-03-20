@@ -70,11 +70,10 @@ Do not ask localization-only delivery questions in that branch.
 
 If the user confirms the final delivery path, then ask:
 
-1. which product surfaces this delivery should cover, but only when the source clearly mixes more than one surface
+1. which product content this delivery should cover, but only when the source clearly mixes more than one surface
 1. the target languages
-2. whether this area was localized before, and if so ask for the old files or exports before freezing the key plan
-3. what kind of deliverable the user wants, such as a source-copy list, translation table, reviewer handoff, or import-ready package
-4. the final handoff format the team can actually use; a carrier answer such as JSON, CSV, or XLSX is not enough when the team expects a specific field layout
+2. whether this area already has reusable keys, old translations, old handoff packages, or an API/export path before freezing the key plan
+3. the final handoff format the team can actually use, including the required fields or files; a carrier answer such as JSON, CSV, or XLSX is not enough when the team expects a specific field layout
 5. a sample or template when the result must match an existing internal system format
 
 When several of those answers are still missing, collect them in one bundled delivery-contract question. Do not serialize them into one turn per field unless the user already answered part of the bundle and only one item remains unresolved.
@@ -83,13 +82,13 @@ Treat the final delivery contract as unsettled until all of the following are an
 
 1. languages
 2. in-scope product content when the source mixes more than one surface
-3. older-localization-files status
-4. deliverable type
-5. handoff format
+3. reusable-history status
+4. handoff format
 
-The user may answer `no old files`, but they still need to answer that question before key reuse or new-key decisions are treated as final.
+The user may answer `no old files` or `no API`, but they still need to answer that question before key reuse or new-key decisions are treated as final.
 If the user only says `JSON`, `CSV`, or `XLSX`, ask one more question about the actual team handoff shape. Do not treat the carrier alone as the full contract unless the user explicitly accepts the skill's built-in default exporter shape.
 If the user already made delivery intent explicit in the first request, skip the document-vs-localization split and go directly to this bundled delivery-contract question.
+If one platform export is available and the user confirms the copy is shared across platforms, use that export as a semantic dedupe aid. Only require another platform's historical assets when the user explicitly needs platform-specific key continuity or platform-specific output mapping.
 
 For draft copy-list work, if the result set is small and the user did not ask for a file, show the draft inline first. Only create a file by default when the result is large enough to be awkward in chat or when the next step depends on a saved artifact.
 
@@ -99,7 +98,7 @@ Do not treat PRD as globally mandatory. Match the requirement to the task:
 
 - `new-build`
   Require a PRD, a structured copy list, or another reliable source of new text.
-  If the request is a final delivery request rather than a simple draft, require target languages, delivery content type, and target output formats or handoff standard. The user must also answer whether older localization files exist before key decisions are treated as final. Older localization files themselves are strongly recommended but not mandatory.
+  If the request is a final delivery request rather than a simple draft, require target languages and target output formats or handoff standard. The user must also answer whether reusable history exists before key decisions are treated as final. Reusable history itself may come from files, exports, or an API path and is strongly recommended but not mandatory.
 - `change-sync`
   Require changed source text such as a PRD diff, copy list, or updated source file, plus the current localization snapshot.
 - `dedupe`

@@ -71,15 +71,16 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    If the user confirms localization delivery, then ask in plain language whether they want:
    - a simple draft list of translatable copy
    - a final localization package that the team can import or hand to developers
+   If the user's own wording already clearly implies final delivery, such as `交付多语言`, `提交多语言翻译`, `给研发`, `导入`, or `handoff`, skip the draft-vs-final question and go straight to the bundled delivery-contract question.
    Only after the user confirms the final delivery path should you require:
    - which product content is in scope when the PRD mixes more than one surface, such as app, web, seller, backend-admin, or other internal tools
    - the target languages
-   - whether this area was localized before, and if so ask for the old files or exports before you freeze keys or make reuse claims
-   - the delivery content type, such as a source-copy list, translation table, reviewer handoff, or import-ready package
-   - the handoff shape the team actually needs; a carrier label such as JSON, CSV, or XLSX is not enough when the team expects a specific field layout
+   - whether this area already has reusable keys, old translations, old handoff packages, or an API/export path you can query before you freeze keys or make reuse claims
+   - the final handoff shape the team actually needs, including both what kind of package it is and what fields or files it must contain; a carrier label such as JSON, CSV, or XLSX is not enough when the team expects a specific field layout
    - a sample or template whenever the team needs the output to match an existing internal system format or old import schema
-   The files themselves are not a default blocker, but the user's answer about whether old files exist is required before you freeze the key plan.
+   The files or API themselves are not a default blocker, but the user's answer about whether reusable history exists is required before you freeze the key plan.
    When more than one of those delivery details is still missing, ask for them in one bundled delivery-contract question instead of splitting them into separate turns.
+   If the user provides one platform's historical snapshot and also confirms the copy is shared across platforms, use that snapshot as a semantic dedupe aid. Only require another platform's historical files when the user explicitly needs platform-specific key continuity or platform-specific output mapping.
    If the PRD clearly mixes more than one product surface, do not guess which ones belong to this release. Ask the user which surfaces this delivery should cover before you freeze the manifest or create keys.
    After the user picks the final delivery path, do not continue into extraction or output generation until the required delivery details are answered.
    A bare answer such as `JSON`, `CSV`, or `XLSX` does not settle the final delivery contract unless the user explicitly accepts the built-in default exporter shape.
@@ -92,9 +93,8 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    For `translation-fix`, `dedupe`, and `export-only`, do not require a PRD when the task can be completed safely without it.
    If the user confirms the task is a final delivery request rather than a simple draft, also collect:
    - the target languages
-   - the delivery content type
    - the target outputs or handoff standard for final delivery
-   - whether older localization files or export snapshots exist, and collect them when they do
+   - whether reusable history exists, and whether it comes from files, export snapshots, or an API adapter
    - a sample or template file if the final package must match the team's existing schema
    Apply the source-priority rule from [references/decision-tables.md](references/decision-tables.md).
    Accept raw source bundles such as:
@@ -124,6 +124,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
    - `vision-extension`
    - `local-ocr`
    - `manual-fallback`
+   Do not create PRD-specific or version-specific generator scripts as the declared release path. If the missing capability is generic, improve the shared bundled scripts instead. Use one-off local helpers only for short inspection, not as the final workflow contract.
 5. Ingest raw PRD artifacts when the user does not already have a structured copy list.
    Read [references/artifact-ingestion.md](references/artifact-ingestion.md).
    Run `scripts/ingest_artifacts.py` on mixed raw materials such as Word, Markdown, HTML, MHTML, PDF, XLSX, CSV, JSON, or screenshots.
@@ -160,7 +161,7 @@ Use the coordinator protocol in the main conversation first. The main thread is 
 9. Decide reuse versus creation.
    Apply [references/review-policy.md](references/review-policy.md) and the human-gate rule from [references/decision-tables.md](references/decision-tables.md).
    Only auto-reuse when `source_text + intent + context` match exactly.
-   For final delivery, do not freeze the key plan until the user has answered whether older localization files exist for this area.
+   For final delivery, do not freeze the key plan until the user has answered whether reusable history exists for this area, and whether it comes from files, exports, or an API path.
    Route fuzzy matches to review.
    Never let low-confidence automation overwrite completed high-risk content.
 10. Plan execution before delegating.

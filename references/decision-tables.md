@@ -53,19 +53,18 @@ Treat `draft-only` and `release-ready` as internal labels. In user-facing conver
 
 When `delivery-intent` is true:
 
-1. if the source clearly mixes more than one product surface, ask which surfaces are in scope for this delivery
+1. if the source clearly mixes more than one product surface, ask which product content is in scope for this delivery
 2. ask for the target languages
-3. ask whether this area was localized before; if yes, request the old files or exports because they help avoid duplicate keys
-4. ask what kind of delivery content the user wants, such as a source-copy list, translation table, reviewer handoff, or import-ready package
-5. ask what handoff shape the team actually needs; a carrier label such as JSON, CSV, or XLSX is not enough when the team expects a specific schema
-6. if the user needs the output to match an existing internal system format, ask for a sample or template file
+3. ask whether this area already has reusable keys, old translations, old handoff packages, or an API/export path that can be queried before new keys are created
+4. ask what the final handoff should look like, including both the package type and the required fields or files; a carrier label such as JSON, CSV, or XLSX is not enough when the team expects a specific schema
+5. if the user needs the output to match an existing internal system format, ask for a sample or template file
 
 If more than one delivery-detail field is still missing, ask for all missing delivery-contract fields in one bundled question. Do not split them into separate turns unless the user answered only part of that bundle and one specific item remains ambiguous.
 
 Only skip these questions when one of the following is also true:
 
 - the user explicitly says `draft only`, `just translate`, `just extract copy`, or another phrase that clearly opts out of release-ready delivery
-- the older localization files status, delivery content type, and handoff format are already present in the provided files
+- the reusable-history status and handoff format are already present in the provided files
 - team defaults are already known in the workspace and are safe to apply
 
 ## PRD Translation Routing Rule
@@ -104,6 +103,7 @@ Infer key strategy in this order:
 | --- | --- |
 | request appears to be PRD/spec translation but the scope is still ambiguous | block and clarify whether the user wants whole-document translation or localization copy extraction |
 | request already explicitly says `多语言`, `i18n`, `本地化`, `交付`, `导出`, or another delivery-intent phrase | skip the document-vs-localization split and go straight to the localization-delivery contract |
+| request already explicitly says delivery intent and clearly implies handoff or submission | skip the draft-vs-final split and go straight to the bundled final-delivery contract |
 | ambiguous PRD/spec translation where the user did not choose a path yet | do not default to full-document translation; ask the scope question first |
 | document-translation request without target language | block and ask for the target language |
 | document-translation request with scope confirmed | continue with document translation and do not ask localization-only delivery questions |
@@ -111,16 +111,16 @@ Infer key strategy in this order:
 | raw-material request before the goal is confirmed | allow only lightweight preflight checks such as file type, page count, or whether text appears selectable; do not run full extraction, OCR, candidate building, or manifest generation yet |
 | `new-build` without older localization files and request is draft-only | continue, but skip high-confidence dedupe and reuse |
 | raw-material request where draft-only vs release-ready is still unclear | block and confirm the goal first |
-| final delivery request where the PRD clearly mixes more than one product surface and scope is not frozen yet | block and ask which surfaces this delivery should cover |
+| final delivery request where the PRD clearly mixes more than one product surface and scope is not frozen yet | block and ask which content in the PRD should count toward this delivery |
 | final delivery request without target languages | block and ask for the target languages first |
-| final delivery request without older-localization-files status | block before key creation and ask whether this area already has older localization files or exports |
-| final delivery request without delivery content type | block and ask whether the user wants a source-copy list, translation table, reviewer handoff, or import-ready package |
+| final delivery request without reusable-history status | block before key creation and ask whether this area already has reusable keys, old translations, old handoff packages, or an API/export path |
 | final delivery request with only a carrier answer such as JSON, CSV, or XLSX | block and ask what the team's handoff needs to look like, and whether there is an old sample or template |
-| final delivery request without file format or handoff format | block and ask for the file format or handoff format |
+| final delivery request without handoff format | block and ask what the team needs to receive, not just the carrier |
 | final delivery request with several delivery details missing at once | ask one bundled delivery-contract question instead of one turn per field |
 | final delivery request that must match an internal system, but no sample/template was provided | block and ask for a sample or template |
 | final delivery request with missing delivery details | do not default to CSV, JSON, or any other output format |
 | `new-build` without older localization files and request looks like release prep | continue, but state that duplicate-key detection will be lower confidence |
+| one platform snapshot is present and the user confirms the copy is shared across platforms | use that snapshot as a semantic dedupe aid; do not block on another platform's historical files unless platform-specific key continuity or output mapping is required |
 | `change-sync` or `dedupe` without snapshot | block and ask for the current catalog |
 | ambiguous short label without context | continue in downgraded mode and mark for human review |
 | medium/high-risk copy from OCR or vision only | require verified text before completion |
@@ -128,6 +128,7 @@ Infer key strategy in this order:
 | release-intent request without target outputs or handoff standard | block and ask for target outputs before final translation/export work |
 | locale coverage unclear | ask for target locales, otherwise keep only the source locale final |
 | final delivery result still has unresolved assumptions or excluded items | surface them in the user-facing reply; do not hide them only in generated artifacts |
+| standardized scripts are close but the model starts building a PRD/version-specific generator | do not treat that script as the final workflow; either stay in shared scripts or clearly label the helper as temporary inspection only |
 
 ## Draft Result Presentation Rule
 

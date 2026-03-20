@@ -78,14 +78,15 @@ Prefer the simplest interpretation first:
 - if the user asks to translate the whole PRD, the whole PDF, or the whole spec, keep the request in this skill and route it into document translation unless they switch to localization delivery
 - if the user gives a PRD, PDF, Word spec, or release document, do not jump straight into translation or full-text extraction; first confirm in plain language whether they want a draft copy table or a final developer-ready package
 - if the user confirms whole-document translation, ask what language they want; only ask about translated Markdown, bilingual output, or another final shape if that choice actually matters
+- if the user already says `交付多语言`, `提交多语言翻译`, `给研发`, `给翻译团队`, `导入`, or another phrase that clearly implies a final handoff, skip the draft-vs-final split and go straight to the bundled final-delivery contract
 - after the user confirms the final delivery path, ask the minimum user-facing questions needed to freeze scope:
   - which product content this delivery should cover, but only when the source clearly mixes more than one surface
   - what languages do you need
-  - did you do this area before, and do you already have old localization files; ask this before freezing keys
-  - what kind of deliverable do you want: source-copy list, translation table, reviewer handoff, or import-ready package
-  - what handoff shape does your team actually need; a carrier answer such as JSON, CSV, or XLSX is not enough if the team expects a fixed schema
+  - does this area already have reusable keys, old translations, old handoff packages, or an API/export path; ask this before freezing keys
+  - what handoff shape does your team actually need; this should cover both the kind of package and the fields/files it must contain, because a carrier answer such as JSON, CSV, or XLSX is not enough if the team expects a fixed schema
 - when several of those answers are still missing, ask them in one bundled delivery-contract question instead of one turn per field
 - only ask for a sample or template when the user says the output must match an existing internal system or old import format, or when the user gives only a carrier answer and the team schema is still unclear
+- if the user provides one platform's old export and confirms the copy is shared across platforms, use that export as a semantic dedupe aid instead of blocking for every other platform's historical file
 - if a draft copy result is small, show it directly in the conversation first and offer a file only if the user wants one
 
 When asking for data, prefer:
@@ -108,8 +109,7 @@ When Claude Code project subagents are available, the main thread should still o
 - no confirmed goal yet when the request starts from raw PRD/PDF/Word materials and it is still unclear whether the user wants a draft copy table or a final delivery package
 - no confirmed included surfaces yet when the PRD clearly mixes more than one product surface and the user asked for final delivery
 - no target languages when the user asked for final delivery
-- no answer yet about whether older localization files exist for this area when the user asked for final delivery
-- no delivery content type when the user asked for final delivery
+- no answer yet about whether reusable history exists for this area when the user asked for final delivery
 - no handoff shape yet when the user asked for final delivery
 - no current snapshot when the user asks for dedupe, reuse, or change sync
 - no business context for ambiguous or high-risk copy
@@ -124,7 +124,7 @@ PRD is not blocking for `translation-fix`, `dedupe`, or `export-only`.
 - missing screenshots for low-risk copy when the PRD and context are already clear
 - missing glossary for generic UI labels
 - missing sidecar when the user only wants basic mode normalization or export
-- missing older localization files for a new-build; continue, but be explicit that duplicate-key detection will be lower confidence
+- missing reusable history for a new-build; continue, but be explicit that duplicate-key detection will be lower confidence
 
 ## Question Design Rules
 
@@ -141,11 +141,11 @@ Good:
 - “你是要我翻整篇文档，还是只把里面需要做多语言的界面文案拎出来？这两个流程不一样。”
 - “你是想让我翻译整个 PRD，还是只翻译 PRD 里会出现在产品里的文案？”
 - “你是要我先整理一版待翻译文案，还是直接给你一份可以交付的多语言包？”
-- “如果你要交付包，我一次把关键信息收齐：1. 这次 PRD 里哪些内容算进翻译范围，2. 要哪些语言，3. 以前这块有没有旧 key / 旧翻译 / 旧交付包，有的话发我一份，4. 你们团队最后拿什么格式接这份交付。”
-- “如果这块以前已经有 key、旧翻译或者旧交付包，发我一份就行。我会先拿来避免重复建 key 和重复翻译。没有也直接说没有。”
+- “如果你要交付包，我一次把关键信息收齐：1. 这次 PRD 里哪些内容算进翻译范围，2. 要哪些语言，3. 这块以前如果已经有旧 key、旧翻译、旧交付包，或者有接口能查到，也一起告诉我，4. 你们团队最后拿到的交付长什么样。”
+- “如果这块以前已经有 key、旧翻译、旧交付包，或者有接口能查到，发我一份或者告诉我怎么查。我会先拿来避免重复建 key 和重复翻译。没有也直接说没有。”
 - “这份 PRD 里混了不止一种内容。你这次要把哪些内容算进交付范围？比如只做安卓/iOS 用户端，还是也包含后台返回给用户的提示文案、商家端或其他内部页面？”
-- “你最后要的内容是什么：源文案清单、翻译表、审核表，还是开发可导入包？”
-- “你们团队最后拿什么格式接这份交付？如果你只说 JSON / CSV / XLSX，我还需要知道字段怎么组织；有旧样本就发我，我按那个结构出。”
+- “你们团队最后拿到的交付长什么样？如果你只说 JSON / CSV / XLSX，我还需要知道字段怎么组织；有旧样本就发我，我按那个结构出。”
+- “如果你已经给了我 iOS 的旧包，而且这次安卓和 iOS 用的是同一批文案，我会先拿这份旧包做语义去重；只有在你明确要求保留 Android 既有 key 或 Android 结构时，我才会继续要 Android 历史文件。”
 - “如果你们系统有固定模板，或者你想跟旧格式保持一致，发我一份旧样本就行。没有的话也请直接说，我再判断能不能按通用格式交付。”
 - “这份文件我可以直接提取。”
 - “这份文件我需要先整理一下，再帮你提取文案。”
@@ -194,7 +194,7 @@ PRD is present. Screenshots are missing but optional for this batch.
 <questions>
   <question id="goal">
     <why>I need to know whether you want a draft list of translatable copy first, or a final multi-language package your team can use directly.</why>
-    <accepted_formats>Reply with either “整理待翻译文案” or “直接做交付包”. If you want the delivery package, also include the scope of content, the languages you need, whether this area already has old localization files, and what format your team expects to receive.</accepted_formats>
+    <accepted_formats>Reply with either “整理待翻译文案” or “直接做交付包”. If you want the delivery package, also include the scope of content, the languages you need, whether this area already has reusable history such as old files or an API path, and what shape your team expects to receive.</accepted_formats>
     <fallback>If you do not decide yet, I will stop before heavy extraction and will not pretend I can finish final delivery.</fallback>
   </question>
 </questions>
@@ -304,15 +304,14 @@ I can continue with the localization-delivery path.
 </known_inputs>
 <missing_required>
 - target languages
-- older localization files status
-- delivery content type
+- reusable-history status
 - final handoff format
 </missing_required>
 <questions>
   <question id="delivery_inputs">
-    <why>I need these details before I can freeze keys, decide whether old content can be reused, and produce the format your team can actually take over without remapping.</why>
-    <accepted_formats>Reply with: 1. the languages you need, 2. whether you have older localization files for this area, 3. whether you want a source-copy list, translation table, reviewer handoff, or import-ready package, 4. what shape your team expects to receive such as a translation table with fixed columns, a runtime import JSON, or an old internal template, 5. an old sample if your team has a fixed template.</accepted_formats>
-    <fallback>If you do not have older files, say “no old files”. If you do not have a fixed template, say “no template”. If you only say `JSON` or `CSV`, I will ask one more question because I still will not know your team's field layout.</fallback>
+    <why>I need these details before I can freeze keys, decide whether old content can be reused, and produce the exact handoff your team can take over without remapping.</why>
+    <accepted_formats>Reply with: 1. the scope of content this delivery should cover, 2. the languages you need, 3. whether this area already has reusable history such as old files, old handoff packages, or an API path, 4. what shape your team expects to receive such as a translation table with fixed columns or an internal JSON schema, 5. an old sample if your team has a fixed template.</accepted_formats>
+    <fallback>If you do not have old files or an API path, say “no old files”. If you do not have a fixed template, say “no template”. If you only say `JSON` or `CSV`, I will ask one more question because I still will not know your team's field layout.</fallback>
   </question>
 </questions>
 <next_step>
@@ -328,8 +327,8 @@ User-facing version of the same follow-up should usually look like this:
 还差 4 个信息，我拿到就继续：
 1. 这次 PRD 里哪些内容算进翻译范围
 2. 要哪些语言
-3. 如果这块以前已经有 key、旧翻译或者旧交付包，发我一份；没有直接说没有
-4. 你们团队最后拿什么格式接这份交付？如果只是 JSON / CSV / XLSX，我还需要知道字段怎么组织
+3. 如果这块以前已经有 key、旧翻译、旧交付包，或者有接口能查到，告诉我一份；没有直接说没有
+4. 你们团队最后拿到的交付长什么样？如果只是 JSON / CSV / XLSX，我还需要知道字段怎么组织
 
 如果你们系统有固定模板，或者你想跟旧格式保持一致，再发我一份旧样本；没有也直接说没有。
 ```
